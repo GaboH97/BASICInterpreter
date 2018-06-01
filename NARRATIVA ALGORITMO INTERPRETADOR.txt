@@ -1,0 +1,95 @@
+ALGORITMO
+-Recorrer cada una las líneas
+- int WhileAbierto = 0
+
+VALIDAR DIM
+
+	-Mirar que inicie con un número de 3 cifras [X]
+	-Mirar que el segundo token es un DIM [X]
+	-Tiene que haber un token [X]
+		-Contar comas del token [X]
+		-Dividir el token por comas [X]
+		-El tamaño del array debe ser igual a num comas+1
+	-El siguiente token después de las variables debe ser AS [X]
+	-El siguiente token debe ser DOUBLE o STRING [X]
+
+VALIDAR PRINT
+
+	-Mirar que inicie con un número de 3 cifras
+	-Mirar que el segundo token es un PRINT
+	-tokenAux =  METODO QUE ENTRA UNA SUCESIÓN DE TOKENS Y RETORNA UNA 		     		     SUCESIÓN DE TOKENS
+	-Cuenta en token aux el número de ";" y el número de comillas
+	-tokenAuxPuntoYComa = Divide token aux por ";" 
+		-El número de comillas debe ser par
+		-El número de punto y comas + 1 = tokenAuxPuntoYComa.size()
+
+METODO QUE ENTRA UNA SUCESIÓN DE TOKENS Y RETORNA UNA SUCESIÓN DE TOKENS
+
+	-Crea una lista auxiliar de tokens
+	-Agrega todos los demás tokens de la que entró a la tercera posición de la 	 lista auxiliar
+	-Retorna la lista auxiliar
+
+
+VALIDAR INPUT
+
+	-Mirar que inicie con un número de 3 cifras
+	-Mirar que el segundo token es un INPUT
+	-Tiene que haber un token con nombre válido
+		-Nombre valido = letras y números sin espacios
+
+VALIDAR ASIGNACIÓN
+
+	-Mirar que inicie con un número de 3 cifras
+	-Tiene que haber un token con nombre de variable válido
+		-Nombre variable valido = letras y números
+	-Tiene que seguir un "="
+	-Luego tiene que seguir una expresión algebráica valida o un valor 	 numérico o una variable con nombre válido
+
+VALIDAR END
+
+	-Mirar que inicie con un número de 3 cifras
+	-Mirar que el segundo token es un END
+	-No tiene que haber ningun token más
+
+VALIDAR WHILE
+
+	-Mirar que inicie con un número de 3 cifras
+	-Mirar que el segundo token es un WHILE
+	-Mirar que el tercer token sea un "("
+	-VALIDAR EXPRESIÓN LÓGICA BASE (CREAR TOKEN DE EXPRESIÓN LÓGICA)
+	-Verifica que el quinto token sea un ")"
+	-Incrementar WhileAbierto
+
+VALIDAR WEND
+
+	-Mirar que inicie con un número de 3 cifras
+	-Mirar que el segundo token es un WEND
+	-No tiene que haber ningun token más
+	-Reducir WhileAbierto
+
+CREAR TOKEN DE EXPRESIÓN LÓGICA
+
+	-Entra una lista de tokens
+	-Concatena en un String los valores de la lista de tokens desde el segundo 	 token hasta el final
+	-retorna el String creado sin el primer y el último caracter
+
+VALIDAR EXPRESIÓN LÓGICA BASE (STRING)
+
+	-Crea el primer token de la expresion lógica desde el inicio del 		 	 string de expresión lógica hasta que encuentre un símbolo 		 	 	 de comparación.
+	-Retorne el símbolo de comparación ya sea ese caracter o ese y el 		         siguiente
+	-Luego, desde el índice del símbolo(s) de comparación, hasta el 		         final o hasta que encuentre un AND o un OR 
+		-Si encuentra un AND o un OR, llama a VALIDAR EXPRESIÓN LÓGICA 		 	BASE y mete el string desde el índice desde donde encontró el AND 			o el OR hasta el final
+
+
+		
+
+
+
+	
+
+
+
+	
+	
+	
+			
