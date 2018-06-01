@@ -1,6 +1,6 @@
-ALGORITMO
+﻿ALGORITMO
 -Recorrer cada una las líneas
-- int WhileAbierto = 0
+- boolean WhileAbierto = 0 [X]
 
 VALIDAR DIM
 

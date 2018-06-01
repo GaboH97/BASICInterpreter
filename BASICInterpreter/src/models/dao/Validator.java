@@ -31,6 +31,52 @@ public class Validator {
         return sb.toString();
     }
 
+    public static void validatePrintLine(int lineIndex, String line) throws Exception {
+
+        //Trim string to only one space between words
+        String trimmedLine = deleteSpaces(line);
+        System.out.println("with deleted spaces " + trimmedLine);
+        //Split line into spaces
+
+        String[] lineTokens = trimmedLine.split(" ");
+        //Check is a valid lineNumber
+
+        if (isValidLineNumber(lineTokens[0])) {
+            String printToken = lineTokens[1];
+            //Check if second token is reserved word DIM 
+
+            if (printToken.toUpperCase().equals(LineType.PRINT.name())) {
+
+                //Build a new token out of the original lineToken array starting
+                //at an specific index
+                String tokenAux = buildNewStringFromIndex(2, lineTokens);
+
+                String[] printableTokens = tokenAux.split(";");
+
+                long countQuotes = tokenAux.chars().filter(num -> num == SyntaxUtils.QUOTES).count();
+                long countdotAndComma = tokenAux.chars().filter(num -> num == ';').count();
+
+                //Check if number of quotes is odd and every dot and comma is
+                //enclosed between two printable tokens
+                if (((countQuotes & 1) == 0) && (printableTokens.length - 1 == countdotAndComma)) {
+
+                    if (areValidPrintableTokens(printableTokens)) {
+                        System.out.println("Print line is OK");
+                    } else {
+                        throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_VARIABLE_NAME));
+                    }
+                } else {
+                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_PRINTABLE_CODE));
+                }
+            } else {
+                throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_NOT_PRINT_FOUND));
+            }
+        } else {
+            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LINE_NUMBER));
+        }
+
+    }
+
     public static void validateDIMLine(int lineIndex, String line) throws Exception {
         //Trim string to only one space between words
         String trimmedLine = deleteSpaces(line);
@@ -79,10 +125,25 @@ public class Validator {
 
     private static boolean areValidVariablesNames(String[] variablesList) {
         for (int i = 0; i < variablesList.length; i++) {
-            String variable = variablesList[i].toUpperCase();
-            if (!variable.matches("[a-zA-Z0-9]+") || SyntaxUtils.RESERVED_WORDS.stream().anyMatch(variable::equals)) {
-                System.out.println(variable);
+            String variableName = variablesList[i].toUpperCase();
+            if (!isValidVariableName(variableName)) {
                 return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean isValidVariableName(String variableName) {
+        return variableName.matches("[a-zA-Z0-9]+") && !SyntaxUtils.RESERVED_WORDS.stream().anyMatch(variableName::equals);
+    }
+
+    private static boolean areValidPrintableTokens(String[] printableTokens) {
+        for (String printableToken : printableTokens) {
+            //Only check printable tokens that are not messages
+            if (!printableToken.contains(String.valueOf(SyntaxUtils.QUOTES))) {
+                if (!isValidVariableName(printableToken)) {
+                    return false;
+                }
             }
         }
         return true;
@@ -92,14 +153,27 @@ public class Validator {
         return lineNumber.length() < 4 && lineNumber.chars().allMatch(Character::isDigit);
     }
 
+    public static String buildNewStringFromIndex(int fromIndex, String[] tokens) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = fromIndex; i < tokens.length; i++) {
+            System.out.println("concatenando " + tokens[i]);
+            builder.append(tokens[i]);
+        }
+        return builder.toString();
+    }
+
     public static void main(String[] args) {
         Validator val = new Validator();
-        String text = "101 DIM VAR2 AS DOUBLE";
+        String dimLine = "101 DIM VAR AS DOUBLE";
+        String printLine = "101 PRINT "
+                + SyntaxUtils.QUOTES + "Hello" + SyntaxUtils.QUOTES + ";"
+                + SyntaxUtils.QUOTES + "Its me" + SyntaxUtils.QUOTES + ";"
+                + "VAR2";
         try {
-            val.validateDIMLine(1, text);
+            val.validateDIMLine(1, dimLine);
+            val.validatePrintLine(2, printLine);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-
     }
 }
