@@ -15,56 +15,53 @@ VALIDAR DIM
 
 VALIDAR PRINT
 
-	-Mirar que inicie con un número de 3 cifras
-	-Mirar que el segundo token es un PRINT
-	-tokenAux =  METODO QUE ENTRA UNA SUCESIÓN DE TOKENS Y RETORNA UNA 		     		     SUCESIÓN DE TOKENS
-	-Cuenta en token aux el número de ";" y el número de comillas
-	-tokenAuxPuntoYComa = Divide token aux por ";" 
-		-El número de comillas debe ser par
-		-El número de punto y comas + 1 = tokenAuxPuntoYComa.size()
+	-Mirar que inicie con un número de 3 cifras [X]
+	-Mirar que el segundo token es un PRINT [X]
+	-tokenAux =  METODO QUE ENTRA UNA SUCESIÓN DE TOKENS Y RETORNA UNA 		     		     SUCESIÓN DE TOKENS [X]
+	-Cuenta en token aux el número de ";" y el número de comillas [X]
+	-tokenAuxPuntoYComa = Divide token aux por ";" [X] 
+		-El número de comillas debe ser par [X]
+		-El número de punto y comas + 1 = tokenAuxPuntoYComa.size() [X]
 
-METODO QUE ENTRA UNA SUCESIÓN DE TOKENS Y RETORNA UNA SUCESIÓN DE TOKENS
+METODO QUE ENTRA UNA SUCESIÓN DE TOKENS Y RETORNA UNA SUCESIÓN DE TOKENS [X]
 
-	-Crea una lista auxiliar de tokens
-	-Agrega todos los demás tokens de la que entró a la tercera posición de la 	 lista auxiliar
-	-Retorna la lista auxiliar
+	-Crea una lista auxiliar de tokens [X]
+	-Agrega todos los demás tokens de la que entró a la tercera posición de la 	 lista auxiliar [X]
+	-Retorna la lista auxiliar [X]
 
 
 VALIDAR INPUT
 
-	-Mirar que inicie con un número de 3 cifras
-	-Mirar que el segundo token es un INPUT
-	-Tiene que haber un token con nombre válido
-		-Nombre valido = letras y números sin espacios
+	-Mirar que inicie con un número de 3 cifras[X]
+	-Mirar que el segundo token es un INPUT [X]
+	-Tiene que haber un token con nombre válido [X]
+		-Nombre valido = letras y números sin espacios [X]
 
 VALIDAR ASIGNACIÓN
 
-	-Mirar que inicie con un número de 3 cifras
-	-Tiene que haber un token con nombre de variable válido
+	-Mirar que inicie con un número de 3 cifras [X]
+	-Tiene que haber un token con nombre de variable válido [X]
 		-Nombre variable valido = letras y números
 	-Tiene que seguir un "="
 	-Luego tiene que seguir una expresión algebráica valida o un valor 	 numérico o una variable con nombre válido
 
 VALIDAR END
 
-	-Mirar que inicie con un número de 3 cifras
-	-Mirar que el segundo token es un END
-	-No tiene que haber ningun token más
+	-Mirar que inicie con un número de 3 cifras [X]
+	-Mirar que el segundo token es un END [X]
+	-No tiene que haber ningun token más [X]
 
 VALIDAR WHILE
 
-	-Mirar que inicie con un número de 3 cifras
-	-Mirar que el segundo token es un WHILE
-	-Mirar que el tercer token sea un "("
+	-Mirar que inicie con un número de 3 cifras [X]
+	-Mirar que el segundo token es un WHILE [X]
 	-VALIDAR EXPRESIÓN LÓGICA BASE (CREAR TOKEN DE EXPRESIÓN LÓGICA)
-	-Verifica que el quinto token sea un ")"
-	-Incrementar WhileAbierto
 
 VALIDAR WEND
 
-	-Mirar que inicie con un número de 3 cifras
-	-Mirar que el segundo token es un WEND
-	-No tiene que haber ningun token más
+	-Mirar que inicie con un número de 3 cifras [X]
+	-Mirar que el segundo token es un WEND [X]
+	-No tiene que haber ningun token más [X]
 	-Reducir WhileAbierto
 
 CREAR TOKEN DE EXPRESIÓN LÓGICA

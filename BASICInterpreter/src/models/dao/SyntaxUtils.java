@@ -15,9 +15,11 @@ import java.util.List;
 public class SyntaxUtils {
 
     //------------------- SYNTAX ERROR MESSAGES -----------------------
-   
     public static final String SPACE = " ";
     public static final char QUOTES = '"';
+    public static final String ASSIGNATION = "=";
+    public static final char[] ARITHMETIC_EXPRESSION_CHARS = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '-', '*', '/', '(', ')', ' ', '.'};
+
     public static final List<String> RESERVED_WORDS = Arrays.asList(
             "DIM",
             "AS",
@@ -45,4 +47,12 @@ public class SyntaxUtils {
     public static final String MSG_INVALID_DATATYPE = "Tipo de dato inválido";
     public static final String MSG_INVALID_PRINTABLE_CODE = "Argumento a imprimir inválido";
     public static final String MSG_TOO_MUCH_TOKENS = "Estructura de línea inválida";
+    public static final String MSG_NOT_INPUT_FOUND = "Esperaba palabra reservada INPUT";
+    public static final String MSG_WHILE_NOT_CLOSED = "Sentencia WHILE sin cerrar";
+    public static final String MSG_IF_NOT_CLOSED = "Sentencia IF sin cerrar";
+    public static final String MSG_PROGRAM_HAS_NOT_ENDED = "No se ha encontrado sentencia END que finalice el programa";
+    public static final String MSG_INVALID_ASSIGNATION = "Asignación inválida";
+    public static final String MSG_INVALID_ARITHMETIC_EXPRESSION = "Expresión algebráica inválida";
+    public static final String MSG_INVALID_LOGIC_EXPRESSION = "Expresión lógica inválida";
+
 }
