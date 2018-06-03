@@ -1,6 +1,7 @@
 package models.dao;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import static models.dao.SyntaxUtils.ASSIGNATION;
 import models.entity.LineType;
 
@@ -59,6 +60,7 @@ public class Validator {
         if (isValidLineNumber(lineTokens[0])) {
             if (lineTokens[1] != null) {
                 String identifierToken = lineTokens[1].toUpperCase();
+                System.out.println("identifier is " + identifierToken);
                 try {
                     switch (LineType.valueOf(identifierToken)) {
                         case DIM:
@@ -74,7 +76,7 @@ public class Validator {
                             validateInputLine(lineIndex, line);
                             break;
                         case IF:
-                            System.out.println("Línea " + lineIndex + " es DIM");
+                            System.out.println("Línea " + lineIndex + " es IF");
                             validateIfLine(lineIndex, line);
                             break;
                         case ENDIF:
@@ -284,6 +286,55 @@ public class Validator {
     }
 
     private static void validateIfLine(int lineIndex, String line) throws Exception {
+
+        String[] lineTokens = line.split(" ");
+
+        //Build IF arguments token till the end of the line
+        String ifArguments = buildNewStringFromIndex(2, lineTokens);
+        System.out.println("IF STMNT " + ifArguments);
+
+        //Extract logical expression from IF arguments
+        String logExp = ifArguments.substring(0, ifArguments.indexOf("THEN"));
+
+        //Extract THEN reserved word from IF arguments, its meant it's the last
+        //Part of the IF statement
+        String thenToken = ifArguments.substring(ifArguments.indexOf("THEN"), ifArguments.length());
+
+        System.out.println(thenToken.length() == 4);
+        System.out.println("Log expr" + logExp);
+
+        if (thenToken.length() == 4) {
+
+        } else {
+            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LOGIC_EXPRESSION));
+        }
+
+        /*
+        if (lineTokens.length < 5) {
+
+            if (lineTokens[2] != null && lineTokens[3] != null) {
+
+                if (isValidLogicExpression(lineTokens[2])) {
+
+                    if (lineTokens[3].toUpperCase().equals("THEN")) {
+
+                        System.out.println("\t Line " + lineIndex + ": IF line is OK");
+
+                    } else {
+                        throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
+                    }
+                } else {
+                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LOGIC_EXPRESSION));
+                }
+            } else {
+                throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
+            }
+        } else {
+            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_TOO_MUCH_TOKENS));
+        }*/
+    }
+
+    private static void validateIfLine2(int lineIndex, String line) throws Exception {
         String[] lineTokens = line.split(" ");
 
         if (lineTokens.length < 5) {
@@ -312,30 +363,33 @@ public class Validator {
 
     private static void validateWhileLine(int lineIndex, String line) throws Exception {
         String[] lineTokens = line.split(" ");
-        if (lineTokens.length < 4) {
+        // if (lineTokens.length < 4) {
 
-            if (lineTokens.length > 2) {
+        if (lineTokens.length > 2) {
 
-                if (lineTokens[2] != null) {
+            if (lineTokens[2] != null) {
 
-                    if (isValidLogicExpression(lineTokens[2])) {
+                String logExpToken = buildNewStringFromIndex(2, lineTokens);
+                System.out.println("logexpr is " + logExpToken);
 
-                        System.out.println("\t Line " + lineIndex + ": WHILE line is OK");
+                if (isValidLogicExpression(logExpToken)) {
 
-                    } else {
-                        throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LOGIC_EXPRESSION));
-                    }
+                    System.out.println("\t Line " + lineIndex + ": WHILE line is OK");
+
                 } else {
-                    System.out.println("entro aqui");
-                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
+                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LOGIC_EXPRESSION));
                 }
             } else {
-                System.out.println("ento aqui");
+                System.out.println("entro aqui");
                 throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
             }
         } else {
-            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_TOO_MUCH_TOKENS));
+            System.out.println("ento aqui");
+            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
         }
+        // } else {
+        //   throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_TOO_MUCH_TOKENS));
+        //}
     }
 
     private static void validateGotoLine(int lineIndex, String line) throws Exception {
@@ -365,6 +419,17 @@ public class Validator {
     }
 
     private static boolean isValidLogicExpression(String logicExpression) {
+        System.out.println("logic expre " + logicExpression);
+        String[] coso = logicExpression.split("AND|OR");
+        System.out.println("Este es el coso");
+        for (int i = 0; i < coso.length; i++) {
+            System.out.println(coso[i]);
+        }
+        //Para el caso más básico que es (ARITEXP LOGOPER ARITEXPR)
+        /* String[] logExpTokens = logicExpression.split(" ");
+        return isValidArithmeticExpression(logExpTokens[0])
+                && (logExpTokens[1].equals("AND") || logExpTokens[1].equals("OR")
+                && isValidArithmeticExpression(logExpTokens[2]));*/
         return true;
     }
 
@@ -446,7 +511,7 @@ public class Validator {
         Validator val = new Validator();
 
         ArrayList<String> lines = new ArrayList<>();
-        String dimLine = "101 DIM VAR AS DOUBLE";
+        //  String dimLine = "101 DIM VAR AS DOUBLE";
         String printLine = "101 PRINT "
                 + SyntaxUtils.QUOTES + "Hello" + SyntaxUtils.QUOTES + ";"
                 + SyntaxUtils.QUOTES + "Its me" + SyntaxUtils.QUOTES + ";"
@@ -456,16 +521,19 @@ public class Validator {
         String inputLine3 = "104 INPUT VAR1";
         String inputLine4 = "105 INPUT VAR1";
         //String validationLine = "111 VAR1 = 0+0";
-        String endLine = "110 WHILE EXPRESSION";
+        String ifLine = "110 IF ((1>6) AND (==7)) THEN";
 
-        lines.add(dimLine);
-        lines.add(printLine);
-        lines.add(inputLine);
-        lines.add(inputLine2);
-        lines.add(inputLine3);
-        lines.add(inputLine4);
+        String whileLine = "110 WHILE r AND x OR s";
+
+        // lines.add(dimLine);
+        //lines.add(printLine);
+        //7lines.add(inputLine);
+        // lines.add(inputLine2);
+        // lines.add(inputLine3);
+        // lines.add(inputLine4);
         //  lines.add(validationLine);
-        lines.add(endLine);
+        //lines.add(whileLine);
+        lines.add(ifLine);
 
         try {
             val.validateCodeLines(lines);
