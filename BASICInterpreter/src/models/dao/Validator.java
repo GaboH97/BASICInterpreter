@@ -313,21 +313,27 @@ public class Validator {
     private static void validateWhileLine(int lineIndex, String line) throws Exception {
         String[] lineTokens = line.split(" ");
         if (lineTokens.length < 4) {
-            
-            if (lineTokens[2] != null) {
 
-                if (isValidLogicExpression(lineTokens[2])) {
+            if (lineTokens.length > 2) {
 
-                    System.out.println("\t Line " + lineIndex + ": WHILE line is OK");
+                if (lineTokens[2] != null) {
 
+                    if (isValidLogicExpression(lineTokens[2])) {
+
+                        System.out.println("\t Line " + lineIndex + ": WHILE line is OK");
+
+                    } else {
+                        throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LOGIC_EXPRESSION));
+                    }
                 } else {
-                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LOGIC_EXPRESSION));
+                    System.out.println("entro aqui");
+                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
                 }
             } else {
+                System.out.println("ento aqui");
                 throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
             }
         } else {
-            
             throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_TOO_MUCH_TOKENS));
         }
     }
@@ -449,8 +455,8 @@ public class Validator {
         String inputLine2 = "103 INPUT VAR1";
         String inputLine3 = "104 INPUT VAR1";
         String inputLine4 = "105 INPUT VAR1";
-        String validationLine = "111 VAR1 = 0+0-";
-        String endLine = "110 WHILE COSO ELS";
+        //String validationLine = "111 VAR1 = 0+0";
+        String endLine = "110 WHILE EXPRESSION";
 
         lines.add(dimLine);
         lines.add(printLine);
@@ -458,7 +464,7 @@ public class Validator {
         lines.add(inputLine2);
         lines.add(inputLine3);
         lines.add(inputLine4);
-        lines.add(validationLine);
+        //  lines.add(validationLine);
         lines.add(endLine);
 
         try {
