@@ -14,7 +14,6 @@ public class SyntaxUtils {
     public static final char QUOTES = '"';
     public static final String ASSIGNATION = "=";
     public static final char[] ARITHMETIC_EXPRESSION_CHARS = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '-', '*', '/', '(', ')', ' ', '.'};
-
     public static final List<String> RESERVED_WORDS = Arrays.asList(
             "DIM",
             "AS",
@@ -49,5 +48,7 @@ public class SyntaxUtils {
     public static final String MSG_INVALID_ASSIGNATION = "Asignación inválida";
     public static final String MSG_INVALID_ARITHMETIC_EXPRESSION = "Expresión algebráica inválida";
     public static final String MSG_INVALID_LOGIC_EXPRESSION = "Expresión lógica inválida";
+    public static final String MSG_STATEMENTS_AFTER_END = "Sentencia inválida ya que había terminado programa";
+    public static final String MSG_IF_NOT_OPENED = "ENDIF sin IF";
 
 }

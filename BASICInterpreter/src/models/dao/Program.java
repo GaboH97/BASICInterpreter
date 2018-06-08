@@ -12,6 +12,7 @@ public class Program {
 
     private HashMap<String, Object> variables;
     private ArrayList<Line> lines;
+    private String text;
 
     public Program() {
         variables = new HashMap<>();

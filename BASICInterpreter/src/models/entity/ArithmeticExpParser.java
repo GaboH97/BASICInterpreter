@@ -1,12 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package models.entity;
 
 import java.util.Stack;
-import models.dao.Validator;
 
 /**
  *
@@ -100,7 +94,7 @@ public class ArithmeticExpParser {
                 return Math.pow(a, b);
             case '/':
                 if (b == 0) {
-                    throw new UnsupportedOperationException("Cannot divide by zero");
+                    throw new UnsupportedOperationException("No se puede dividir por cero");
                 }
                 return a / b;
         }

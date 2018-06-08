@@ -50,69 +50,92 @@ public class Validator {
         return sb.toString();
     }
 
-    public static void validateLine(int lineIndex, String line) throws Exception {
+    public void validateLine(int lineIndex, String line) throws Exception {
         String trimmedLine = deleteSpaces(line);
 
         //Split line into spaces
         String[] lineTokens = trimmedLine.split(" ");
 
-        //Check is a valid lineNumber
-        if (isValidLineNumber(lineTokens[0])) {
-            if (lineTokens[1] != null) {
-                String identifierToken = lineTokens[1].toUpperCase();
-                System.out.println("identifier is " + identifierToken);
-                try {
-                    switch (LineType.valueOf(identifierToken)) {
-                        case DIM:
-                            System.out.println("Línea " + lineIndex + " es DIM");
-                            validateDIMLine(lineIndex, line);
-                            break;
-                        case PRINT:
-                            System.out.println("Línea " + lineIndex + " es PRINT");
-                            validatePrintLine(lineIndex, line);
-                            break;
-                        case INPUT:
-                            System.out.println("Línea " + lineIndex + " es INPUT");
-                            validateInputLine(lineIndex, line);
-                            break;
-                        case IF:
-                            System.out.println("Línea " + lineIndex + " es IF");
-                            validateIfLine(lineIndex, line);
-                            break;
-                        case ENDIF:
-                            System.out.println("Línea " + lineIndex + " es ENDIF");
-                            validateEndEndIfWendLine(lineIndex, line);
-                            break;
-                        case WHILE:
-                            System.out.println("Línea " + lineIndex + " es WHILE");
-                            validateWhileLine(lineIndex, line);
-                            break;
-                        case WEND:
-                            System.out.println("Línea " + lineIndex + " es WEND");
-                            validateEndEndIfWendLine(lineIndex, line);
-                            break;
-                        case GOTO:
-                            System.out.println("Línea " + lineIndex + " es GOTO");
-                            validateGotoLine(lineIndex, line);
-                            break;
-                        case END:
-                            System.out.println("Línea " + lineIndex + " es END");
-                            validateEndEndIfWendLine(lineIndex, line);
-                            break;
+        if (!hasEnded) {
+            //Check is a valid lineNumber
+            if (isValidLineNumber(lineTokens[0])) {
+                if (lineTokens[1] != null) {
+                    String identifierToken = lineTokens[1].toUpperCase();
+                    System.out.println("identifier is " + identifierToken);
+                    try {
+                        switch (LineType.valueOf(identifierToken)) {
+                            case DIM:
+                                System.out.println("Línea " + lineIndex + " es DIM");
+                                validateDIMLine(lineIndex, line);
+                                break;
+                            case PRINT:
+                                System.out.println("Línea " + lineIndex + " es PRINT");
+                                validatePrintLine(lineIndex, line);
+                                break;
+                            case INPUT:
+                                System.out.println("Línea " + lineIndex + " es INPUT");
+                                validateInputLine(lineIndex, line);
+                                break;
+                            case IF:
+                                System.out.println("Línea " + lineIndex + " es IF");
+                                validateIfLine(lineIndex, line);
+                                isIfOpen = true;
+                                break;
+                            case ENDIF:
+                                if (isIfOpen && !isWhileOpen) {
+                                    System.out.println("Línea " + lineIndex + " es ENDIF");
+                                    validateElseEndEndIfWendLine(lineIndex, line);
+                                    isIfOpen = false;
+                                } else {
+                                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_IF_NOT_OPENED));
+                                }
+                                break;
+                            case WHILE:
+                                System.out.println("Línea " + lineIndex + " es WHILE");
+                                validateWhileLine(lineIndex, line);
+                                isWhileOpen = true;
+                                break;
+                            case WEND:
+                                System.out.println("Línea " + lineIndex + " es WEND");
+                                validateElseEndEndIfWendLine(lineIndex, line);
+                                isWhileOpen = false;
+                                break;
+                            case GOTO:
+                                System.out.println("Línea " + lineIndex + " es GOTO");
+                                validateGotoLine(lineIndex, line);
+                                break;
+                            case END:
+
+                                System.out.println("Línea " + lineIndex + " es END");
+                                validateElseEndEndIfWendLine(lineIndex, line);
+                                hasEnded = true;
+                                break;
+                            case ELSE:
+                                if (isIfOpen && !isWhileOpen) {
+                                    System.out.println("Línea " + lineIndex + " es ELSE");
+                                    validateElseEndEndIfWendLine(lineIndex, line);
+                                    hasEnded = true;
+                                    break;
+                                } else {
+                                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_IF_NOT_OPENED));
+                                }
+                        }
+                    } catch (Exception e) {
+                        //ESTE CASO ES PARA ASIGNACIÓN DE VARIABLE
+                        e.printStackTrace();
+                        //System.out.println("Línea " + lineIndex + " es de asignación ");
+                        validateAssignationLine(lineIndex, line);
+
                     }
-                } catch (Exception e) {
-                    //ESTE CASO ES PARA ASIGNACIÓN DE VARIABLE
-                    e.printStackTrace();
-                    //System.out.println("Línea " + lineIndex + " es de asignación ");
-                    validateAssignationLine(lineIndex, line);
 
+                } else {
+                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
                 }
-
             } else {
-                throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
+                throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LINE_NUMBER));
             }
         } else {
-            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LINE_NUMBER));
+            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_STATEMENTS_AFTER_END));
         }
     }
 
@@ -124,30 +147,20 @@ public class Validator {
         //Split line into spaces
         String[] lineTokens = trimmedLine.split(" ");
         //Check is a valid lineNumber
-        if (isValidLineNumber(lineTokens[0])) {
-            String inputToken = lineTokens[1];
-            //Check if second token is reserved word INPUT
 
-            if (inputToken.toUpperCase().equals(LineType.INPUT.name())) {
+        if (lineTokens[2] != null) {
 
-                if (lineTokens[2] != null) {
+            if (isValidVariableName(lineTokens[2])) {
 
-                    if (isValidVariableName(lineTokens[2])) {
+                System.out.println("\t Line " + lineIndex + ": INPUT line is OK");
 
-                        System.out.println("\t Line " + lineIndex + ": INPUT line is OK");
-
-                    } else {
-                        throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_VARIABLE_NAME));
-                    }
-                } else {
-                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
-                }
             } else {
-                throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_NOT_INPUT_FOUND));
+                throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_VARIABLE_NAME));
             }
         } else {
-            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LINE_NUMBER));
+            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
         }
+
     }
 
     public static void validatePrintLine(int lineIndex, String line) throws Exception {
@@ -201,48 +214,43 @@ public class Validator {
         String trimmedLine = deleteSpaces(line);
         //Split line into spaces
         String[] lineTokens = trimmedLine.split(" ");
-        //Check is a valid lineNumber
-        if (isValidLineNumber(lineTokens[0])) {
-            String dimToken = lineTokens[1];
-            //Check if second token is reserved word PRINT
-            if (dimToken.toUpperCase().equals(LineType.DIM.name())) {
-                //split variables by commas for third token, check variablesamount - 1
-                //equal to countCommas
-                String[] variablesList = lineTokens[2].split(",");
-                long countCommas = lineTokens[2].chars().filter(num -> num == ',').count();
-                if (variablesList.length - 1 == countCommas) {
-                    //Check that all variables in variable list are
-                    if (areValidVariablesNames(variablesList)) {
 
-                        if (lineTokens[3] != null || lineTokens[4] != null) {
+        if (lineTokens.length < 6) {
+            //split variables by commas for third token, check variablesamount - 1
+            //equal to countCommas
+            String[] variablesList = lineTokens[2].split(",");
+            long countCommas = lineTokens[2].chars().filter(num -> num == ',').count();
+            if (variablesList.length - 1 == countCommas) {
+                //Check that all variables in variable list are
+                if (areValidVariablesNames(variablesList)) {
 
-                            if (lineTokens[3].toUpperCase().equals("AS")
-                                    && (lineTokens[4].toUpperCase().equals("DOUBLE")
-                                    || lineTokens[4].toUpperCase().equals("STRING"))) {
+                    if (lineTokens[3] != null || lineTokens[4] != null) {
 
-                                System.out.println("\t Line " + lineIndex + ": DIM line is OK");
+                        if (lineTokens[3].toUpperCase().equals("AS")
+                                && (lineTokens[4].toUpperCase().equals("DOUBLE")
+                                || lineTokens[4].toUpperCase().equals("STRING"))) {
 
-                            } else {
-                                throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_DATATYPE));
-                            }
+                            System.out.println("\t Line " + lineIndex + ": DIM line is OK");
+
                         } else {
-                            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
+                            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_DATATYPE));
                         }
                     } else {
-                        throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_VARIABLE_NAME));
+                        throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
                     }
                 } else {
-                    throw new Exception(buildOutputErrorMessage(lineIndex, "Más comas que variables"));
+                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_VARIABLE_NAME));
                 }
             } else {
-                throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_NOT_DIM_FOUND));
+                throw new Exception(buildOutputErrorMessage(lineIndex, "Más comas que variables"));
             }
         } else {
-            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LINE_NUMBER));
+            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_TOO_MUCH_TOKENS));
         }
     }
 
-    private static void validateEndEndIfWendLine(int lineIndex, String line) throws Exception {
+    public void validateElseEndEndIfWendLine(int lineIndex, String line) throws Exception {
+
         String trimmedLine = deleteSpaces(line);
 
         //Split line into spaces
@@ -253,6 +261,7 @@ public class Validator {
         } else {
             throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_TOO_MUCH_TOKENS));
         }
+
     }
 
     private static void validateAssignationLine(int lineIndex, String line) throws Exception {
@@ -289,25 +298,24 @@ public class Validator {
 
         String[] lineTokens = line.split(" ");
 
-        //Build IF arguments token till the end of the line
-        String ifArguments = buildNewStringFromIndex(2, lineTokens);
-        System.out.println("IF STMNT " + ifArguments);
+        if (lineTokens.length < 5) {
+            //Build IF arguments token till the end of the line
+            String logExp = lineTokens[2];
+            String thenToken = lineTokens[3];
 
-        //Extract logical expression from IF arguments
-        String logExp = ifArguments.substring(0, ifArguments.indexOf("THEN"));
-
-        //Extract THEN reserved word from IF arguments, its meant it's the last
-        //Part of the IF statement
-        String thenToken = ifArguments.substring(ifArguments.indexOf("THEN"), ifArguments.length());
-
-        System.out.println(thenToken.length() == 4);
-        System.out.println("Log expr" + logExp);
-
-        if (thenToken.length() == 4) {
-
+            if (thenToken.length() == 4 && thenToken.toUpperCase().equals("THEN")) {
+                if (isValidLogicExpression(logExp)) {
+                    System.out.println("\t Line " + lineIndex + ": IF line is OK");
+                } else {
+                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LOGIC_EXPRESSION));
+                }
+            } else {
+                throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
+            }
         } else {
-            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LOGIC_EXPRESSION));
+            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_TOO_MUCH_TOKENS));
         }
+
 
         /*
         if (lineTokens.length < 5) {
@@ -365,27 +373,18 @@ public class Validator {
         String[] lineTokens = line.split(" ");
         // if (lineTokens.length < 4) {
 
-        if (lineTokens.length > 2) {
+        if (lineTokens.length < 100) {
+            String logExpToken = buildNewStringFromIndex(2, lineTokens);
+            System.out.println("logexpr is " + logExpToken);
 
-            if (lineTokens[2] != null) {
-
-                String logExpToken = buildNewStringFromIndex(2, lineTokens);
-                System.out.println("logexpr is " + logExpToken);
-
-                if (isValidLogicExpression(logExpToken)) {
-
-                    System.out.println("\t Line " + lineIndex + ": WHILE line is OK");
-
-                } else {
-                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LOGIC_EXPRESSION));
-                }
+            if (isValidLogicExpression(logExpToken)) {
+                System.out.println("\t Line " + lineIndex + ": WHILE line is OK");
             } else {
-                System.out.println("entro aqui");
-                throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
+                throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LOGIC_EXPRESSION));
             }
         } else {
             System.out.println("ento aqui");
-            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
+            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_TOO_MUCH_TOKENS));
         }
         // } else {
         //   throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_TOO_MUCH_TOKENS));
@@ -419,9 +418,7 @@ public class Validator {
     }
 
     private static boolean isValidLogicExpression(String logicExpression) {
-        System.out.println("logic expre " + logicExpression);
         String[] coso = logicExpression.split("AND|OR");
-        System.out.println("Este es el coso");
         for (int i = 0; i < coso.length; i++) {
             System.out.println(coso[i]);
         }
@@ -496,6 +493,7 @@ public class Validator {
     }
 
     public static boolean isValidLineNumber(String lineNumber) {
+        System.out.println("wiiii");
         return lineNumber.length() < 4 && lineNumber.chars().allMatch(Character::isDigit);
     }
 
@@ -511,7 +509,7 @@ public class Validator {
         Validator val = new Validator();
 
         ArrayList<String> lines = new ArrayList<>();
-        //  String dimLine = "101 DIM VAR AS DOUBLE";
+        String dimLine = "001 DIM VAR AS DOUBLE ";
         String printLine = "101 PRINT "
                 + SyntaxUtils.QUOTES + "Hello" + SyntaxUtils.QUOTES + ";"
                 + SyntaxUtils.QUOTES + "Its me" + SyntaxUtils.QUOTES + ";"
@@ -520,20 +518,25 @@ public class Validator {
         String inputLine2 = "103 INPUT VAR1";
         String inputLine3 = "104 INPUT VAR1";
         String inputLine4 = "105 INPUT VAR1";
-        //String validationLine = "111 VAR1 = 0+0";
-        String ifLine = "110 IF ((1>6) AND (==7)) THEN";
-
+        String validationLine = "111 VAR1 = 0+0";
+        String ifLine = "110 IF ((1>6)AND(5==7)) THEN";
+        String endIfLine = "115 ENDIF";
         String whileLine = "110 WHILE r AND x OR s";
+        String wendLine = "110 WEND";
+        String endLine = "110 END";
 
         // lines.add(dimLine);
         //lines.add(printLine);
-        //7lines.add(inputLine);
+        // lines.add(inputLine);
         // lines.add(inputLine2);
         // lines.add(inputLine3);
         // lines.add(inputLine4);
-        //  lines.add(validationLine);
-        //lines.add(whileLine);
+        // lines.add(validationLine);
         lines.add(ifLine);
+        lines.add(endIfLine);
+        lines.add(whileLine);
+        lines.add(wendLine);
+        lines.add(endLine);
 
         try {
             val.validateCodeLines(lines);
