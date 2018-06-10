@@ -1,6 +1,7 @@
 package models.entity;
 
 import java.util.Stack;
+import models.dao.Validator;
 
 /**
  *
@@ -9,6 +10,7 @@ import java.util.Stack;
 public class ArithmeticExpParser {
 
     public static double solveArithmeticExpression(String expression) {
+
         String trimmedExpression = expression.replaceAll(" ", "");
 
         char[] tokens = expression.toCharArray();
@@ -20,12 +22,14 @@ public class ArithmeticExpParser {
         Stack<Character> ops = new Stack<Character>();
 
         for (int i = 0; i < tokens.length; i++) {
-
+            
+            //HASTA EL MOMENTO SOLO FUNCIONA CON NÚMEROS ENTEROS
             // Current token is a number, push it to stack for numbers
-            if (tokens[i] >= '0' && tokens[i] <= '9') {
+            if (Character.isLetterOrDigit(tokens[i])) {
                 StringBuffer sbuf = new StringBuffer();
+
                 // There may be more than one digits in number
-                while (i < tokens.length && tokens[i] >= '0' && tokens[i] <= '9') {
+                while (i < tokens.length && Character.isLetterOrDigit(tokens[i])) {
                     sbuf.append(tokens[i++]);
                 }
                 values.push(Double.parseDouble(sbuf.toString()));
@@ -90,7 +94,6 @@ public class ArithmeticExpParser {
             case '*':
                 return a * b;
             case '^':
-                System.out.println("entro aqui");
                 return Math.pow(a, b);
             case '/':
                 if (b == 0) {

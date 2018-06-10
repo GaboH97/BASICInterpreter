@@ -1,8 +1,9 @@
 package models.dao;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import static models.dao.SyntaxUtils.ASSIGNATION;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import static models.dao.SyntaxUtils.buildOutputErrorMessage;
 import models.entity.LineType;
 
 /**
@@ -33,17 +34,16 @@ public class Validator {
             throw new Exception(buildOutputErrorMessage(lines.size(), SyntaxUtils.MSG_IF_NOT_CLOSED));
         }
 
-        /*if (!hasEnded) {
+        if (!hasEnded) {
             throw new Exception(buildOutputErrorMessage(lines.size(), SyntaxUtils.MSG_PROGRAM_HAS_NOT_ENDED));
-        }*/
+        }
         System.out.println("Succesfully validated!");
     }
 
     public static String deleteSpaces(String str) {    //custom method to remove multiple space
         StringBuilder sb = new StringBuilder();
         for (String s : str.split(" ")) {
-            if (!s.equals("")) // ignore space
-            {
+            if (!s.equals("")) { // ignore space
                 sb.append(s).append(" ");       // add word with 1 space
             }
         }
@@ -61,7 +61,6 @@ public class Validator {
             if (isValidLineNumber(lineTokens[0])) {
                 if (lineTokens[1] != null) {
                     String identifierToken = lineTokens[1].toUpperCase();
-                    System.out.println("identifier is " + identifierToken);
                     try {
                         switch (LineType.valueOf(identifierToken)) {
                             case DIM:
@@ -87,7 +86,8 @@ public class Validator {
                                     validateElseEndEndIfWendLine(lineIndex, line);
                                     isIfOpen = false;
                                 } else {
-                                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_IF_NOT_OPENED));
+                                    System.out.println("entro aqui");
+                                    throw new Exception(buildOutputErrorMessage(lineIndex, "perra vida"));
                                 }
                                 break;
                             case WHILE:
@@ -96,16 +96,20 @@ public class Validator {
                                 isWhileOpen = true;
                                 break;
                             case WEND:
-                                System.out.println("Línea " + lineIndex + " es WEND");
-                                validateElseEndEndIfWendLine(lineIndex, line);
-                                isWhileOpen = false;
+                                if (isWhileOpen) {
+                                    System.out.println("Línea " + lineIndex + " es WEND");
+                                    validateElseEndEndIfWendLine(lineIndex, line);
+                                    isWhileOpen = false;
+                                } else {
+                                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_WHILE_NOT_OPENED));
+
+                                }
                                 break;
                             case GOTO:
                                 System.out.println("Línea " + lineIndex + " es GOTO");
                                 validateGotoLine(lineIndex, line);
                                 break;
                             case END:
-
                                 System.out.println("Línea " + lineIndex + " es END");
                                 validateElseEndEndIfWendLine(lineIndex, line);
                                 hasEnded = true;
@@ -123,9 +127,8 @@ public class Validator {
                     } catch (Exception e) {
                         //ESTE CASO ES PARA ASIGNACIÓN DE VARIABLE
                         e.printStackTrace();
-                        //System.out.println("Línea " + lineIndex + " es de asignación ");
+                        System.out.println("Línea " + lineIndex + " es de asignación ");
                         validateAssignationLine(lineIndex, line);
-
                     }
 
                 } else {
@@ -165,46 +168,29 @@ public class Validator {
 
     public static void validatePrintLine(int lineIndex, String line) throws Exception {
 
-        //Trim string to only one space between words
-        String trimmedLine = deleteSpaces(line);
-        //Split line into spaces
+        String[] lineTokens = line.split(" ");
+        //Build a new token out of the original lineToken array starting
+        //at an specific index
 
-        String[] lineTokens = trimmedLine.split(" ");
-        //Check is a valid lineNumber
+        String tokenAux = buildNewStringFromIndex(2, lineTokens);
 
-        if (isValidLineNumber(lineTokens[0])) {
-            String printToken = lineTokens[1];
-            //Check if second token is reserved word DIM 
+        String[] printableTokens = tokenAux.split(";");
 
-            if (printToken.toUpperCase().equals(LineType.PRINT.name())) {
+        long countQuotes = tokenAux.chars().filter(num -> num == SyntaxUtils.QUOTES).count();
+        long countdotAndComma = tokenAux.chars().filter(num -> num == ';').count();
 
-                //Build a new token out of the original lineToken array starting
-                //at an specific index
-                String tokenAux = buildNewStringFromIndex(2, lineTokens);
+        //Check if number of quotes is odd and every dot and comma is
+        //enclosed between two printable tokens
+        if (((countQuotes & 1) == 0) && (printableTokens.length - 1 == countdotAndComma)) {
 
-                String[] printableTokens = tokenAux.split(";");
+            if (areValidPrintableTokens(printableTokens)) {
+                System.out.println("\t Line " + lineIndex + ": PRINT line is OK");
 
-                long countQuotes = tokenAux.chars().filter(num -> num == SyntaxUtils.QUOTES).count();
-                long countdotAndComma = tokenAux.chars().filter(num -> num == ';').count();
-
-                //Check if number of quotes is odd and every dot and comma is
-                //enclosed between two printable tokens
-                if (((countQuotes & 1) == 0) && (printableTokens.length - 1 == countdotAndComma)) {
-
-                    if (areValidPrintableTokens(printableTokens)) {
-                        System.out.println("\t Line " + lineIndex + ": PRINT line is OK");
-
-                    } else {
-                        throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_VARIABLE_NAME));
-                    }
-                } else {
-                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_PRINTABLE_CODE));
-                }
             } else {
-                throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_NOT_PRINT_FOUND));
+                throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_VARIABLE_NAME));
             }
         } else {
-            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LINE_NUMBER));
+            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_PRINTABLE_CODE));
         }
 
     }
@@ -264,7 +250,7 @@ public class Validator {
 
     }
 
-    private static void validateAssignationLine(int lineIndex, String line) throws Exception {
+    public static void validateAssignationLine(int lineIndex, String line) throws Exception {
         String[] lineTokens = line.split(" ");
         if (lineTokens.length < 5) {
             if (isValidVariableName(lineTokens[1])) {
@@ -294,18 +280,28 @@ public class Validator {
         }
     }
 
-    private static void validateIfLine(int lineIndex, String line) throws Exception {
+    public static void validateIfLine(int lineIndex, String line) throws Exception {
 
         String[] lineTokens = line.split(" ");
 
+        //ACÁ SE CAMBIA SI LA EXPRESIÓN LÓGICA TIENE ESPACIOS TIENE ESPACIOS    
         if (lineTokens.length < 5) {
-            //Build IF arguments token till the end of the line
-            String logExp = lineTokens[2];
-            String thenToken = lineTokens[3];
+            //ACÁ SE CAMBIA SI LA EXPRESIÓN LÓGICA TIENE ESPACIOS TIENE ESPACIOS 
+            if (lineTokens.length == 4) {
+                //Extract logExpr and THEN reserved word
+                String logExp = lineTokens[2];
+                String thenToken = lineTokens[3];
 
-            if (thenToken.length() == 4 && thenToken.toUpperCase().equals("THEN")) {
+                System.out.println("Log Expr is: " + logExp);
                 if (isValidLogicExpression(logExp)) {
-                    System.out.println("\t Line " + lineIndex + ": IF line is OK");
+
+                    if (thenToken.length() == 4 && thenToken.toUpperCase().equals("THEN")) {
+
+                        System.out.println("\t Line " + lineIndex + ": IF line is OK");
+
+                    } else {
+                        throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_NOT_THEN_FOUND));
+                    }
                 } else {
                     throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LOGIC_EXPRESSION));
                 }
@@ -342,40 +338,15 @@ public class Validator {
         }*/
     }
 
-    private static void validateIfLine2(int lineIndex, String line) throws Exception {
-        String[] lineTokens = line.split(" ");
-
-        if (lineTokens.length < 5) {
-
-            if (lineTokens[2] != null && lineTokens[3] != null) {
-
-                if (isValidLogicExpression(lineTokens[2])) {
-
-                    if (lineTokens[3].toUpperCase().equals("THEN")) {
-
-                        System.out.println("\t Line " + lineIndex + ": IF line is OK");
-
-                    } else {
-                        throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
-                    }
-                } else {
-                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LOGIC_EXPRESSION));
-                }
-            } else {
-                throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
-            }
-        } else {
-            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_TOO_MUCH_TOKENS));
-        }
-    }
-
     private static void validateWhileLine(int lineIndex, String line) throws Exception {
         String[] lineTokens = line.split(" ");
-        // if (lineTokens.length < 4) {
 
+        //AQUI TOCA MIRAR SI LA EXPRESIÓN LÓGICA DEL WHILE VA CON O SIN ESPACIOS
+        //ES DECIR, SI VA POR EJEMPLO
+        //  100 WHILE A > B
+        //  100 WHILE A>B
         if (lineTokens.length < 100) {
             String logExpToken = buildNewStringFromIndex(2, lineTokens);
-            System.out.println("logexpr is " + logExpToken);
 
             if (isValidLogicExpression(logExpToken)) {
                 System.out.println("\t Line " + lineIndex + ": WHILE line is OK");
@@ -383,7 +354,6 @@ public class Validator {
                 throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LOGIC_EXPRESSION));
             }
         } else {
-            System.out.println("ento aqui");
             throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_TOO_MUCH_TOKENS));
         }
         // } else {
@@ -400,7 +370,7 @@ public class Validator {
 
                 if (isValidLineNumber(lineTokens[2])) {
 
-                    System.out.println("\t Line " + lineIndex + ": WHILE line is OK");
+                    System.out.println("\t Line " + lineIndex + ": GOTO line is OK");
 
                 } else {
                     throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LINE_NUMBER));
@@ -413,21 +383,83 @@ public class Validator {
         }
     }
 
-    public static String buildOutputErrorMessage(int lineIndex, String message) {
-        return "at line " + lineIndex + ": " + message;
-    }
+    public static boolean isValidLogicExpression(String logicExpression) {
+        //ESTE CASO FALLA SI 100 IF RAND > 0
 
-    private static boolean isValidLogicExpression(String logicExpression) {
-        String[] coso = logicExpression.split("AND|OR");
-        for (int i = 0; i < coso.length; i++) {
-            System.out.println(coso[i]);
+        //HACER SPLIT POR LOS OPERADORES LÓGICOS AND,OR YA QUE ELLOS SOLO CUMPLEN LA
+        //FUNCIÓN DE CONCATENAR SUBEXPRESIONES LÓGICAS QUE INVOLUCRAN COMPARACIÓN
+        // (>, <, >=, >= ==)
+        Matcher m = Pattern.compile("AND|OR").matcher(logicExpression);
+        int andOrOcurrences = 0;
+        while (m.find()) {
+            andOrOcurrences++;
         }
+
+        System.out.println("Occurences: " + andOrOcurrences);
+        String[] subLogicExpressions = logicExpression.split("AND|OR");
+        if (andOrOcurrences == subLogicExpressions.length - 1) {
+            for (String subLogicExpression : subLogicExpressions) {
+                System.out.println("sublogic expression is: " + subLogicExpression);
+                if (!isValidSubLogicExpression(subLogicExpression)) {
+
+                    return false;
+                }
+            }
+        } else {
+            System.out.println("aqui");
+            return false;
+        }
+
         //Para el caso más básico que es (ARITEXP LOGOPER ARITEXPR)
         /* String[] logExpTokens = logicExpression.split(" ");
         return isValidArithmeticExpression(logExpTokens[0])
                 && (logExpTokens[1].equals("AND") || logExpTokens[1].equals("OR")
                 && isValidArithmeticExpression(logExpTokens[2]));*/
         return true;
+    }
+
+    public static boolean isValidSubLogicExpression(String sublogicExpression) {
+        //LA SUBEXPRESIÓN LÓGICA TIENE LA SIGUIENTE ESTRUCTURA
+        //EXPRESIÓN ARITMÉTICA - OPERADOR LÓGICO DE COMPARACIÓN - EXPRESIÓN ARITMÉTICA
+
+        //ENCUENTRA QUÉ OPERADOR LÓGICO DE COMPARACIÓN UTILIZA LA EXPRESIÓN
+        String operator = findOperatorInSublogicExpression(sublogicExpression);
+
+        if (!operator.equals("")) {
+
+            int indexOfOperator = sublogicExpression.indexOf(operator);
+            int lengthOfOperator = operator.length();
+
+            //CREA NUEVO STRING CON LA PRIMERA EXPRESIÓN ARITMÉTICA DESDE INDEX 0
+            //HASTA EL INDEX DEL OPERADOR LÓGICO DE COMPARACIÓN
+            String firstAritExpr = sublogicExpression.substring(0, indexOfOperator);
+
+            //CREA NUEVO STRING CON LA SEGUNDA EXPRESIÓN ARITMÉTICA DESDE INDEX DONDE
+            //EMPIEZA EL OPERADOR + LA LONGITUD DEL OPERADOR HASTA EL FINAL DE LA
+            //SUBEXPRESIÓN LÓGICA
+            String secondAritExpr = sublogicExpression.substring(indexOfOperator + lengthOfOperator, sublogicExpression.length());
+
+            if (isValidArithmeticExpression(firstAritExpr)
+                    && isValidArithmeticExpression(secondAritExpr)) {
+
+                return true;
+            } else {
+                //SI ALGUNA DE LAS DOS EXPRESIONES ARITMÉTICAS NO ES VÁLIDA
+                return false;
+            }
+        } else {
+            //SI NO HAY ALGÚN OPERADOR DENTRO DE LA SUBEXPRESIÓN LÓGICA
+            return false;
+        }
+    }
+
+    public static String findOperatorInSublogicExpression(String sublogicExpression) {
+        for (String operator : SyntaxUtils.LOGIC_EXPRESSION_COMPARATORS) {
+            if (sublogicExpression.contains(operator)) {
+                return operator;
+            }
+        }
+        return "";
     }
 
     private static boolean areValidVariablesNames(String[] variablesList) {
@@ -440,6 +472,23 @@ public class Validator {
         return true;
     }
 
+    public static boolean isAnOperator(char c) {
+        switch (c) {
+            case '*':
+            case '/':
+            case '+':
+            case '-':
+            case '%':
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public static boolean isANumberOrValidVariableChar(char c) {
+        return ((int) c) >= 48 && ((int) c) <= 57;
+    }
+
     /**
      *
      * @param expression
@@ -447,19 +496,49 @@ public class Validator {
      * means it doesn't contain characters different to numbers, basic
      * aritmethic operators and parentheses
      */
-    private static boolean isValidArithmeticExpression(String expression) {
-        int parentheses = 0;
-        for (int i = 0; i < expression.length(); i++) {
-            char character = expression.charAt(i);
-            if (!isValidCharacter(character)) {
-                return false;
-            } else if (character == '(') {
-                parentheses++;
-            } else if (character == ')') {
-                parentheses--;
-            }
+    public static boolean isValidArithmeticExpression(String expression) {
+        System.out.println("Aritmetic expression is " + expression);
+        // TEST 1
+        if (isAnOperator(expression.charAt(0)) || isAnOperator(expression.charAt(expression.length() - 1))) {
+            return false;
         }
-        return parentheses == 0;
+
+        int openParenthCount = 0;
+        boolean lastWasOp = false;
+        boolean lastWasOpen = false;
+
+        for (char c : expression.toCharArray()) {
+            if (c == ' ') {
+                continue;
+            }
+            if (c == '(') {
+                openParenthCount++;
+                lastWasOpen = true;
+                continue;
+            } else if (c == ')') {
+                if (openParenthCount <= 0 || lastWasOp) {
+                    return false;
+                }
+                openParenthCount--;
+            } else if (isAnOperator(c)) {
+                if (lastWasOp || lastWasOpen) {
+                    return false;
+                }
+                lastWasOp = true;
+                continue;
+            } else if (!isANumberOrValidVariableChar(c)) {
+                return false;
+            }
+            lastWasOp = false;
+            lastWasOpen = false;
+        }
+        if (openParenthCount != 0) {
+            return false;
+        }
+        if (lastWasOp || lastWasOpen) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -493,7 +572,6 @@ public class Validator {
     }
 
     public static boolean isValidLineNumber(String lineNumber) {
-        System.out.println("wiiii");
         return lineNumber.length() < 4 && lineNumber.chars().allMatch(Character::isDigit);
     }
 
@@ -519,7 +597,9 @@ public class Validator {
         String inputLine3 = "104 INPUT VAR1";
         String inputLine4 = "105 INPUT VAR1";
         String validationLine = "111 VAR1 = 0+0";
+        String assignationLine = "102 X = 1+0";
         String ifLine = "110 IF ((1>6)AND(5==7)) THEN";
+        String ifLine2 = "110 IF 1>0AND2>0OR2==100*(2*((12+6)/5))/14 THEN";
         String endIfLine = "115 ENDIF";
         String whileLine = "110 WHILE r AND x OR s";
         String wendLine = "110 WEND";
@@ -532,10 +612,11 @@ public class Validator {
         // lines.add(inputLine3);
         // lines.add(inputLine4);
         // lines.add(validationLine);
-        lines.add(ifLine);
+        // lines.add(assignationLine);
+        lines.add(ifLine2);
         lines.add(endIfLine);
-        lines.add(whileLine);
-        lines.add(wendLine);
+        //lines.add(whileLine);
+        //lines.add(wendLine);
         lines.add(endLine);
 
         try {
@@ -544,6 +625,7 @@ public class Validator {
             //val.validatePrintLine(2, printLine);
             //val.validateInputLine(3, inputLine);
         } catch (Exception e) {
+            e.printStackTrace();
             System.out.println(e.getMessage());
         }
     }
