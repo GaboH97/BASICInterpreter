@@ -5,6 +5,8 @@
  */
 package models.entity;
 
+import java.util.Formatter;
+
 /**
  *
  * @author user
@@ -43,6 +45,12 @@ public class Line {
 
     public void setLineType(LineType lineType) {
         this.lineType = lineType;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%-100s -> %s \n", getText(),
+                (getLineType() != null) ? getLineType().name() : "ASIGN");
     }
 
 }

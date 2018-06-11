@@ -10,16 +10,18 @@ import models.entity.LineType;
  *
  * @author user
  */
-public class Validator {
+public class SyntaxValidator {
 
     private boolean isWhileOpen;
     private boolean isIfOpen;
     private boolean hasEnded;
+    private boolean hasDeclaredVariables;
 
-    public Validator() {
+    public SyntaxValidator() {
         isWhileOpen = false;
         isIfOpen = false;
         hasEnded = false;
+        hasDeclaredVariables = false;
     }
 
     public void validateCodeLines(ArrayList<String> lines) throws Exception {
@@ -64,27 +66,36 @@ public class Validator {
                     try {
                         switch (LineType.valueOf(identifierToken)) {
                             case DIM:
-                                System.out.println("Línea " + lineIndex + " es DIM");
-                                validateDIMLine(lineIndex, line);
+                                if (!hasDeclaredVariables) {
+                                    System.out.println("Línea " + lineIndex + " es DIM");
+                                    validateDIMLine(lineIndex, line);
+                                } else {
+                                    System.out.println("ya no se puede declarar");
+                                    //TODO
+                                }
                                 break;
                             case PRINT:
                                 System.out.println("Línea " + lineIndex + " es PRINT");
                                 validatePrintLine(lineIndex, line);
+                                hasDeclaredVariables = true;
                                 break;
                             case INPUT:
                                 System.out.println("Línea " + lineIndex + " es INPUT");
                                 validateInputLine(lineIndex, line);
+                                hasDeclaredVariables = true;
                                 break;
                             case IF:
                                 System.out.println("Línea " + lineIndex + " es IF");
                                 validateIfLine(lineIndex, line);
                                 isIfOpen = true;
+                                hasDeclaredVariables = true;
                                 break;
                             case ENDIF:
                                 if (isIfOpen && !isWhileOpen) {
                                     System.out.println("Línea " + lineIndex + " es ENDIF");
                                     validateElseEndEndIfWendLine(lineIndex, line);
                                     isIfOpen = false;
+                                    hasDeclaredVariables = true;
                                 } else {
                                     System.out.println("entro aqui");
                                     throw new Exception(buildOutputErrorMessage(lineIndex, "perra vida"));
@@ -94,12 +105,14 @@ public class Validator {
                                 System.out.println("Línea " + lineIndex + " es WHILE");
                                 validateWhileLine(lineIndex, line);
                                 isWhileOpen = true;
+                                hasDeclaredVariables = true;
                                 break;
                             case WEND:
                                 if (isWhileOpen) {
                                     System.out.println("Línea " + lineIndex + " es WEND");
                                     validateElseEndEndIfWendLine(lineIndex, line);
                                     isWhileOpen = false;
+                                    hasDeclaredVariables = true;
                                 } else {
                                     throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_WHILE_NOT_OPENED));
 
@@ -108,17 +121,20 @@ public class Validator {
                             case GOTO:
                                 System.out.println("Línea " + lineIndex + " es GOTO");
                                 validateGotoLine(lineIndex, line);
+                                hasDeclaredVariables = true;
                                 break;
                             case END:
                                 System.out.println("Línea " + lineIndex + " es END");
                                 validateElseEndEndIfWendLine(lineIndex, line);
                                 hasEnded = true;
+                                hasDeclaredVariables = true;
                                 break;
                             case ELSE:
                                 if (isIfOpen && !isWhileOpen) {
                                     System.out.println("Línea " + lineIndex + " es ELSE");
                                     validateElseEndEndIfWendLine(lineIndex, line);
                                     hasEnded = true;
+                                    hasDeclaredVariables = true;
                                     break;
                                 } else {
                                     throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_IF_NOT_OPENED));
@@ -126,9 +142,9 @@ public class Validator {
                         }
                     } catch (Exception e) {
                         //ESTE CASO ES PARA ASIGNACIÓN DE VARIABLE
-                        e.printStackTrace();
                         System.out.println("Línea " + lineIndex + " es de asignación ");
                         validateAssignationLine(lineIndex, line);
+                        hasDeclaredVariables = true;
                     }
 
                 } else {
@@ -395,18 +411,15 @@ public class Validator {
             andOrOcurrences++;
         }
 
-        System.out.println("Occurences: " + andOrOcurrences);
         String[] subLogicExpressions = logicExpression.split("AND|OR");
+
         if (andOrOcurrences == subLogicExpressions.length - 1) {
             for (String subLogicExpression : subLogicExpressions) {
-                System.out.println("sublogic expression is: " + subLogicExpression);
                 if (!isValidSubLogicExpression(subLogicExpression)) {
-
                     return false;
                 }
             }
         } else {
-            System.out.println("aqui");
             return false;
         }
 
@@ -497,7 +510,6 @@ public class Validator {
      * aritmethic operators and parentheses
      */
     public static boolean isValidArithmeticExpression(String expression) {
-        System.out.println("Aritmetic expression is " + expression);
         // TEST 1
         if (isAnOperator(expression.charAt(0)) || isAnOperator(expression.charAt(expression.length() - 1))) {
             return false;
@@ -584,7 +596,7 @@ public class Validator {
     }
 
     public static void main(String[] args) {
-        Validator val = new Validator();
+        SyntaxValidator val = new SyntaxValidator();
 
         ArrayList<String> lines = new ArrayList<>();
         String dimLine = "001 DIM VAR AS DOUBLE ";

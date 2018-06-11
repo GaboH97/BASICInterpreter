@@ -1,7 +1,6 @@
 package models.entity;
 
 import java.util.Stack;
-import models.dao.Validator;
 
 /**
  *
@@ -24,6 +23,7 @@ public class ArithmeticExpParser {
         for (int i = 0; i < tokens.length; i++) {
             
             //HASTA EL MOMENTO SOLO FUNCIONA CON NÚMEROS ENTEROS
+            
             // Current token is a number, push it to stack for numbers
             if (Character.isLetterOrDigit(tokens[i])) {
                 StringBuffer sbuf = new StringBuffer();

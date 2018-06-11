@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import models.dao.Validator;
+import models.dao.Program;
+import models.dao.SyntaxValidator;
 
 /**
  *
@@ -37,19 +38,24 @@ public class ProgramLoader {
 
     public static void main(String[] args) {
 
+        Program program = new Program();
         ProgramLoader programLoader = new ProgramLoader();
-        Validator validator = new Validator();
+        SyntaxValidator validator = new SyntaxValidator();
+        
         String fileName = "Program_1.txt";
         ArrayList<String> lines = programLoader.readProgramLinesFromFile(fileName);
+       
         if (!lines.isEmpty()) {
-            System.out.println("PROGRAM LINES \n");
+            System.out.println("TEXT LINES \n");
             lines.stream().forEach(line -> System.out.println("\t" + line));
             try {
                 validator.validateCodeLines(lines);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
+            program.loadCodeLines(lines);
+            System.out.println(program.toString());
+            System.out.println(program.printVariables());
         }
-
     }
 }
