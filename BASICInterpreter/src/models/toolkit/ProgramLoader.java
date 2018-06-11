@@ -48,14 +48,15 @@ public class ProgramLoader {
         if (!lines.isEmpty()) {
             System.out.println("TEXT LINES \n");
             lines.stream().forEach(line -> System.out.println("\t" + line));
+            System.out.println("\n");
             try {
                 validator.validateCodeLines(lines);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-            program.loadCodeLines(lines);
+            /*program.loadCodeLines(lines);
             System.out.println(program.toString());
-            System.out.println(program.printVariables());
+            System.out.println(program.printVariables());*/
         }
     }
 }

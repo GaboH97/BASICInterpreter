@@ -15,11 +15,11 @@ public class SyntaxUtils {
     public static final String ASSIGNATION = "=";
     public static final char[] ARITHMETIC_EXPRESSION_CHARS = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '-', '*', '/', '(', ')', ' ', '.'};
     public static final List<String> LOGIC_EXPRESSION_COMPARATORS = Arrays.asList(
-            ">",
-            "<",
             ">=",
             "<=",
-            "=="
+            "==",
+            ">",
+            "<"
     );
     public static final List<String> RESERVED_WORDS = Arrays.asList(
             "DIM",

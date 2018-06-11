@@ -1,6 +1,7 @@
 package models.dao;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import static models.dao.SyntaxUtils.buildOutputErrorMessage;
@@ -63,15 +64,23 @@ public class SyntaxValidator {
             if (isValidLineNumber(lineTokens[0])) {
                 if (lineTokens[1] != null) {
                     String identifierToken = lineTokens[1].toUpperCase();
-                    try {
+
+                    //REVISA QUE EL STRING DEL TIPO DE LÍNEA ESTÉ EN EL ENUMERADO
+                    //DE TIPOS DE LÍNEA, SI NO, SE TOMA COMO UNA ASIGNACIÓN
+                    //DE VARIABLE
+                    boolean existsInLineType = Arrays.stream(LineType.values())
+                            .anyMatch(val -> val.name().equals(identifierToken.toUpperCase()));
+
+                    if (existsInLineType) {
+
                         switch (LineType.valueOf(identifierToken)) {
+
                             case DIM:
                                 if (!hasDeclaredVariables) {
                                     System.out.println("Línea " + lineIndex + " es DIM");
                                     validateDIMLine(lineIndex, line);
                                 } else {
                                     System.out.println("ya no se puede declarar");
-                                    //TODO
                                 }
                                 break;
                             case PRINT:
@@ -97,7 +106,6 @@ public class SyntaxValidator {
                                     isIfOpen = false;
                                     hasDeclaredVariables = true;
                                 } else {
-                                    System.out.println("entro aqui");
                                     throw new Exception(buildOutputErrorMessage(lineIndex, "perra vida"));
                                 }
                                 break;
@@ -135,12 +143,13 @@ public class SyntaxValidator {
                                     validateElseEndEndIfWendLine(lineIndex, line);
                                     hasEnded = true;
                                     hasDeclaredVariables = true;
-                                    break;
+
                                 } else {
                                     throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_IF_NOT_OPENED));
                                 }
+                                break;
                         }
-                    } catch (Exception e) {
+                    } else {
                         //ESTE CASO ES PARA ASIGNACIÓN DE VARIABLE
                         System.out.println("Línea " + lineIndex + " es de asignación ");
                         validateAssignationLine(lineIndex, line);
@@ -157,8 +166,8 @@ public class SyntaxValidator {
             throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_STATEMENTS_AFTER_END));
         }
     }
-
     //********************** VALIDATIONS *************************
+
     public static void validateInputLine(int lineIndex, String line) throws Exception {
         //Trim string to only one space between words
         String trimmedLine = deleteSpaces(line);
@@ -268,6 +277,7 @@ public class SyntaxValidator {
 
     public static void validateAssignationLine(int lineIndex, String line) throws Exception {
         String[] lineTokens = line.split(" ");
+        //FALLA SI HAY ESPACIOS EN LA ASIGNACIÓN
         if (lineTokens.length < 5) {
             if (isValidVariableName(lineTokens[1])) {
 
@@ -412,10 +422,15 @@ public class SyntaxValidator {
         }
 
         String[] subLogicExpressions = logicExpression.split("AND|OR");
+        
+        for (String subLogicExpression : subLogicExpressions) {
+            System.out.println(subLogicExpression);
+        }
 
         if (andOrOcurrences == subLogicExpressions.length - 1) {
             for (String subLogicExpression : subLogicExpressions) {
                 if (!isValidSubLogicExpression(subLogicExpression)) {
+                    System.out.println("cagada");
                     return false;
                 }
             }
@@ -437,6 +452,7 @@ public class SyntaxValidator {
 
         //ENCUENTRA QUÉ OPERADOR LÓGICO DE COMPARACIÓN UTILIZA LA EXPRESIÓN
         String operator = findOperatorInSublogicExpression(sublogicExpression);
+        System.out.println("operator is "+operator);
 
         if (!operator.equals("")) {
 
@@ -451,7 +467,8 @@ public class SyntaxValidator {
             //EMPIEZA EL OPERADOR + LA LONGITUD DEL OPERADOR HASTA EL FINAL DE LA
             //SUBEXPRESIÓN LÓGICA
             String secondAritExpr = sublogicExpression.substring(indexOfOperator + lengthOfOperator, sublogicExpression.length());
-
+            
+            System.out.println(firstAritExpr+" & "+secondAritExpr);
             if (isValidArithmeticExpression(firstAritExpr)
                     && isValidArithmeticExpression(secondAritExpr)) {
 
@@ -602,7 +619,7 @@ public class SyntaxValidator {
         String dimLine = "001 DIM VAR AS DOUBLE ";
         String printLine = "101 PRINT "
                 + SyntaxUtils.QUOTES + "Hello" + SyntaxUtils.QUOTES + ";"
-                + SyntaxUtils.QUOTES + "Its me" + SyntaxUtils.QUOTES + ";"
+                + SyntaxUtils.QUOTES + "Its_me" + SyntaxUtils.QUOTES + ";"
                 + "VAR2";
         String inputLine = "102 INPUT VAR1";
         String inputLine2 = "103 INPUT VAR1";
@@ -612,20 +629,21 @@ public class SyntaxValidator {
         String assignationLine = "102 X = 1+0";
         String ifLine = "110 IF ((1>6)AND(5==7)) THEN";
         String ifLine2 = "110 IF 1>0AND2>0OR2==100*(2*((12+6)/5))/14 THEN";
+        String ifLine3 = "110 IF 1==0AND2>=1 THEN";
         String endIfLine = "115 ENDIF";
         String whileLine = "110 WHILE r AND x OR s";
         String wendLine = "110 WEND";
         String endLine = "110 END";
 
         // lines.add(dimLine);
-        //lines.add(printLine);
+        lines.add(printLine);
         // lines.add(inputLine);
         // lines.add(inputLine2);
         // lines.add(inputLine3);
         // lines.add(inputLine4);
         // lines.add(validationLine);
         // lines.add(assignationLine);
-        lines.add(ifLine2);
+        lines.add(ifLine3);
         lines.add(endIfLine);
         //lines.add(whileLine);
         //lines.add(wendLine);
