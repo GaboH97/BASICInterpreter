@@ -60,9 +60,24 @@ public class SyntaxUtils {
     public static final String MSG_WHILE_NOT_OPENED = "WEND sin WHILE";
     public static final String MSG_NOT_THEN_FOUND = "Esperaba palabra reservada THEN";
     public static final String MSG_LINE_ALREADY_EXISTS = "Número de línea duplicado";
+    public static final String MSG_VARIABLE_ALREADY_DECLARED = "Variable ya está declarada";
 
     public static String buildOutputErrorMessage(int lineIndex, String message) {
         return "at line " + lineIndex + ": " + message;
+    }
+
+    /**
+     *
+     * @param lineIndex
+     * @param args
+     * @return
+     */
+    public static String buildOutputErrorMessage(int lineIndex, String... args) {
+        StringBuilder builder = new StringBuilder();
+        for (String arg : args) {
+            builder.append(arg).append(" ");
+        }
+        return "at line " + lineIndex + ": " + builder.toString();
     }
 
 }

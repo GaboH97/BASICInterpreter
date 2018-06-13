@@ -103,6 +103,74 @@ public class ArithmeticExpParser {
         }
         return 0;
     }
+    
+    public static boolean isAnOperator(char c) {
+        switch (c) {
+            case '*':
+            case '/':
+            case '+':
+            case '-':
+            case '%':
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public static boolean isANumberOrValidVariableChar(char c) {
+        return ((int) c) >= 48 && ((int) c) <= 57;
+    }
+    
+    /**
+     *
+     * @param expression
+     * @return true If param expression is lexicographically correct, which
+     * means it doesn't contain characters different to numbers, basic
+     * aritmethic operators and parentheses
+     */
+    public static boolean isValidArithmeticExpression(String expression) {
+        // TEST 1
+        if (isAnOperator(expression.charAt(0)) || isAnOperator(expression.charAt(expression.length() - 1))) {
+            return false;
+        }
+
+        int openParenthCount = 0;
+        boolean lastWasOp = false;
+        boolean lastWasOpen = false;
+
+        for (char c : expression.toCharArray()) {
+            if (c == ' ') {
+                continue;
+            }
+            if (c == '(') {
+                openParenthCount++;
+                lastWasOpen = true;
+                continue;
+            } else if (c == ')') {
+                if (openParenthCount <= 0 || lastWasOp) {
+                    return false;
+                }
+                openParenthCount--;
+            } else if (isAnOperator(c)) {
+                if (lastWasOp || lastWasOpen) {
+                    return false;
+                }
+                lastWasOp = true;
+                continue;
+            } else if (!isANumberOrValidVariableChar(c)) {
+                return false;
+            }
+            lastWasOp = false;
+            lastWasOpen = false;
+        }
+        if (openParenthCount != 0) {
+            return false;
+        }
+        if (lastWasOp || lastWasOpen) {
+            return false;
+        }
+        return true;
+    }
 
     // Driver method to test above methods
     public static void main(String[] args) {

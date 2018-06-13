@@ -41,10 +41,10 @@ public class ProgramLoader {
         Program program = new Program();
         ProgramLoader programLoader = new ProgramLoader();
         SyntaxValidator validator = new SyntaxValidator();
-        
+
         String fileName = "Program_1.txt";
         ArrayList<String> lines = programLoader.readProgramLinesFromFile(fileName);
-       
+
         if (!lines.isEmpty()) {
             System.out.println("TEXT LINES \n");
             lines.stream().forEach(line -> System.out.println("\t" + line));
@@ -54,9 +54,9 @@ public class ProgramLoader {
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-            /*program.loadCodeLines(lines);
+            program.loadCodeLines(lines);
             System.out.println(program.toString());
-            System.out.println(program.printVariables());*/
+            System.out.println(program.printVariables());
         }
     }
 }

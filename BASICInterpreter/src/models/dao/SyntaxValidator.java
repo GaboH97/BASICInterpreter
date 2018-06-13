@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import static models.dao.SyntaxUtils.buildOutputErrorMessage;
+import models.entity.ArithmeticExpParser;
 import models.entity.LineType;
 
 /**
@@ -279,15 +280,15 @@ public class SyntaxValidator {
         String[] lineTokens = line.split(" ");
         //FALLA SI HAY ESPACIOS EN LA ASIGNACIÓN
         if (lineTokens.length < 5) {
+            
             if (isValidVariableName(lineTokens[1])) {
 
                 if (lineTokens[2] != null && lineTokens[3] != null) {
 
                     if (lineTokens[2].equals(SyntaxUtils.ASSIGNATION)) {
 
-                        if (isValidArithmeticExpression(lineTokens[3])) {
+                        if (ArithmeticExpParser.isValidArithmeticExpression(lineTokens[3])) {
                             System.out.println("\t Line " + lineIndex + ": ASSIGNATION line is OK");
-
                         } else {
                             throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_ARITHMETIC_EXPRESSION));
                         }
@@ -422,7 +423,7 @@ public class SyntaxValidator {
         }
 
         String[] subLogicExpressions = logicExpression.split("AND|OR");
-        
+
         for (String subLogicExpression : subLogicExpressions) {
             System.out.println(subLogicExpression);
         }
@@ -452,7 +453,7 @@ public class SyntaxValidator {
 
         //ENCUENTRA QUÉ OPERADOR LÓGICO DE COMPARACIÓN UTILIZA LA EXPRESIÓN
         String operator = findOperatorInSublogicExpression(sublogicExpression);
-        System.out.println("operator is "+operator);
+        System.out.println("operator is " + operator);
 
         if (!operator.equals("")) {
 
@@ -467,10 +468,10 @@ public class SyntaxValidator {
             //EMPIEZA EL OPERADOR + LA LONGITUD DEL OPERADOR HASTA EL FINAL DE LA
             //SUBEXPRESIÓN LÓGICA
             String secondAritExpr = sublogicExpression.substring(indexOfOperator + lengthOfOperator, sublogicExpression.length());
-            
-            System.out.println(firstAritExpr+" & "+secondAritExpr);
-            if (isValidArithmeticExpression(firstAritExpr)
-                    && isValidArithmeticExpression(secondAritExpr)) {
+
+            System.out.println(firstAritExpr + " & " + secondAritExpr);
+            if (ArithmeticExpParser.isValidArithmeticExpression(firstAritExpr)
+                    && ArithmeticExpParser.isValidArithmeticExpression(secondAritExpr)) {
 
                 return true;
             } else {
@@ -502,87 +503,7 @@ public class SyntaxValidator {
         return true;
     }
 
-    public static boolean isAnOperator(char c) {
-        switch (c) {
-            case '*':
-            case '/':
-            case '+':
-            case '-':
-            case '%':
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    public static boolean isANumberOrValidVariableChar(char c) {
-        return ((int) c) >= 48 && ((int) c) <= 57;
-    }
-
-    /**
-     *
-     * @param expression
-     * @return true If param expression is lexicographically correct, which
-     * means it doesn't contain characters different to numbers, basic
-     * aritmethic operators and parentheses
-     */
-    public static boolean isValidArithmeticExpression(String expression) {
-        // TEST 1
-        if (isAnOperator(expression.charAt(0)) || isAnOperator(expression.charAt(expression.length() - 1))) {
-            return false;
-        }
-
-        int openParenthCount = 0;
-        boolean lastWasOp = false;
-        boolean lastWasOpen = false;
-
-        for (char c : expression.toCharArray()) {
-            if (c == ' ') {
-                continue;
-            }
-            if (c == '(') {
-                openParenthCount++;
-                lastWasOpen = true;
-                continue;
-            } else if (c == ')') {
-                if (openParenthCount <= 0 || lastWasOp) {
-                    return false;
-                }
-                openParenthCount--;
-            } else if (isAnOperator(c)) {
-                if (lastWasOp || lastWasOpen) {
-                    return false;
-                }
-                lastWasOp = true;
-                continue;
-            } else if (!isANumberOrValidVariableChar(c)) {
-                return false;
-            }
-            lastWasOp = false;
-            lastWasOpen = false;
-        }
-        if (openParenthCount != 0) {
-            return false;
-        }
-        if (lastWasOp || lastWasOpen) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     *
-     * @param character
-     * @return true if character equals to one of the ALLOWED_CHARS chars
-     */
-    private static boolean isValidCharacter(char character) {
-        for (int i = 0; i < SyntaxUtils.ARITHMETIC_EXPRESSION_CHARS.length; i++) {
-            if (character == SyntaxUtils.ARITHMETIC_EXPRESSION_CHARS[i]) {
-                return true;
-            }
-        }
-        return false;
-    }
+    
 
     public static boolean isValidVariableName(String variableName) {
         return variableName.matches("[a-zA-Z0-9]+") && !SyntaxUtils.RESERVED_WORDS.stream().anyMatch(variableName::equals);
