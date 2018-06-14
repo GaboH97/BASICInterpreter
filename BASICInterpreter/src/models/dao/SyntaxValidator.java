@@ -2,10 +2,11 @@ package models.dao;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import static models.dao.SyntaxUtils.buildOutputErrorMessage;
-import models.entity.ArithmeticExpParser;
 import models.entity.LineType;
 
 /**
@@ -207,7 +208,7 @@ public class SyntaxValidator {
 
         //Check if number of quotes is odd and every dot and comma is
         //enclosed between two printable tokens
-        if (((countQuotes & 1) == 0) && (printableTokens.length - 1 == countdotAndComma)) {
+        if (((countQuotes & 1) == 0) && (printableTokens.length - 1 == countdotAndComma) && (((countQuotes / 2) - 1) <= countdotAndComma) && auxValidatorPrint(tokenAux)) {
 
             if (areValidPrintableTokens(printableTokens)) {
                 System.out.println("\t Line " + lineIndex + ": PRINT line is OK");
@@ -221,12 +222,62 @@ public class SyntaxValidator {
 
     }
 
+    private static boolean auxValidatorPrint(String line) {
+        boolean quotesOpen = false;
+        boolean dotAndComaOpen = false;
+        for (char c : line.toCharArray()) {
+            if (c == '"') {
+                quotesOpen = !quotesOpen;
+            }
+            if (c == ';') {
+                if (quotesOpen) {
+                    return false;
+                }
+            }
+        }
+        int counter = 0;
+        for (int i = 0; i < line.length() - 1; i++) {
+            if (line.charAt(i) == '"') {
+                counter++;
+                if (counter == 2) {
+                    if ((line.charAt(i + 1) == ';') || line.charAt(i + 1) == ',') {
+                        counter = 0;
+                    } else {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     public static void validateDIMLine(int lineIndex, String line) throws Exception {
         //Trim string to only one space between words
         String trimmedLine = deleteSpaces(line);
         //Split line into spaces
         String[] lineTokens = trimmedLine.split(" ");
-
+        ArrayList<String> lineTokensAux = new ArrayList<>();
+        String aux = "";
+        int counter = 0;
+        lineTokensAux.add(lineTokens[0]);
+        lineTokensAux.add(lineTokens[1]);
+        for (int i = 2; i < lineTokens.length; i++) {
+            if (!lineTokens[i].equals("AS")) {
+                aux += lineTokens[i];
+            } else {
+                counter = i;
+                lineTokensAux.add(aux);
+                break;
+            }
+        }
+        for (int i = counter; i < lineTokens.length; i++) {
+            lineTokensAux.add(lineTokens[i]);
+        }
+        lineTokens = lineTokensAux.toArray(new String[lineTokensAux.size()]);
+        for (String lineToken : lineTokens) {
+            
+        System.out.println("asssssssssssssssssssssssss" + lineToken.toString());
+        }
         if (lineTokens.length < 6) {
             //split variables by commas for third token, check variablesamount - 1
             //equal to countCommas
@@ -280,15 +331,15 @@ public class SyntaxValidator {
         String[] lineTokens = line.split(" ");
         //FALLA SI HAY ESPACIOS EN LA ASIGNACIÓN
         if (lineTokens.length < 5) {
-            
             if (isValidVariableName(lineTokens[1])) {
 
                 if (lineTokens[2] != null && lineTokens[3] != null) {
 
                     if (lineTokens[2].equals(SyntaxUtils.ASSIGNATION)) {
 
-                        if (ArithmeticExpParser.isValidArithmeticExpression(lineTokens[3])) {
+                        if (isValidArithmeticExpression(lineTokens[3])) {
                             System.out.println("\t Line " + lineIndex + ": ASSIGNATION line is OK");
+
                         } else {
                             throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_ARITHMETIC_EXPRESSION));
                         }
@@ -470,8 +521,8 @@ public class SyntaxValidator {
             String secondAritExpr = sublogicExpression.substring(indexOfOperator + lengthOfOperator, sublogicExpression.length());
 
             System.out.println(firstAritExpr + " & " + secondAritExpr);
-            if (ArithmeticExpParser.isValidArithmeticExpression(firstAritExpr)
-                    && ArithmeticExpParser.isValidArithmeticExpression(secondAritExpr)) {
+            if (isValidArithmeticExpression(firstAritExpr)
+                    && isValidArithmeticExpression(secondAritExpr)) {
 
                 return true;
             } else {
@@ -503,7 +554,87 @@ public class SyntaxValidator {
         return true;
     }
 
-    
+    public static boolean isAnOperator(char c) {
+        switch (c) {
+            case '*':
+            case '/':
+            case '+':
+            case '-':
+            case '%':
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public static boolean isANumberOrValidVariableChar(char c) {
+        return ((int) c) >= 48 && ((int) c) <= 57;
+    }
+
+    /**
+     *
+     * @param expression
+     * @return true If param expression is lexicographically correct, which
+     * means it doesn't contain characters different to numbers, basic
+     * aritmethic operators and parentheses
+     */
+    public static boolean isValidArithmeticExpression(String expression) {
+        // TEST 1
+        if (isAnOperator(expression.charAt(0)) || isAnOperator(expression.charAt(expression.length() - 1))) {
+            return false;
+        }
+
+        int openParenthCount = 0;
+        boolean lastWasOp = false;
+        boolean lastWasOpen = false;
+
+        for (char c : expression.toCharArray()) {
+            if (c == ' ') {
+                continue;
+            }
+            if (c == '(') {
+                openParenthCount++;
+                lastWasOpen = true;
+                continue;
+            } else if (c == ')') {
+                if (openParenthCount <= 0 || lastWasOp) {
+                    return false;
+                }
+                openParenthCount--;
+            } else if (isAnOperator(c)) {
+                if (lastWasOp || lastWasOpen) {
+                    return false;
+                }
+                lastWasOp = true;
+                continue;
+            } else if (!isANumberOrValidVariableChar(c)) {
+                return false;
+            }
+            lastWasOp = false;
+            lastWasOpen = false;
+        }
+        if (openParenthCount != 0) {
+            return false;
+        }
+        if (lastWasOp || lastWasOpen) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     *
+     * @param character
+     * @return true if character equals to one of the ALLOWED_CHARS chars
+     */
+    private static boolean isValidCharacter(char character) {
+        for (int i = 0; i < SyntaxUtils.ARITHMETIC_EXPRESSION_CHARS.length; i++) {
+            if (character == SyntaxUtils.ARITHMETIC_EXPRESSION_CHARS[i]) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public static boolean isValidVariableName(String variableName) {
         return variableName.matches("[a-zA-Z0-9]+") && !SyntaxUtils.RESERVED_WORDS.stream().anyMatch(variableName::equals);
@@ -534,50 +665,59 @@ public class SyntaxValidator {
     }
 
     public static void main(String[] args) {
-        SyntaxValidator val = new SyntaxValidator();
-
-        ArrayList<String> lines = new ArrayList<>();
-        String dimLine = "001 DIM VAR AS DOUBLE ";
-        String printLine = "101 PRINT "
-                + SyntaxUtils.QUOTES + "Hello" + SyntaxUtils.QUOTES + ";"
-                + SyntaxUtils.QUOTES + "Its_me" + SyntaxUtils.QUOTES + ";"
-                + "VAR2";
-        String inputLine = "102 INPUT VAR1";
-        String inputLine2 = "103 INPUT VAR1";
-        String inputLine3 = "104 INPUT VAR1";
-        String inputLine4 = "105 INPUT VAR1";
-        String validationLine = "111 VAR1 = 0+0";
-        String assignationLine = "102 X = 1+0";
-        String ifLine = "110 IF ((1>6)AND(5==7)) THEN";
-        String ifLine2 = "110 IF 1>0AND2>0OR2==100*(2*((12+6)/5))/14 THEN";
-        String ifLine3 = "110 IF 1==0AND2>=1 THEN";
-        String endIfLine = "115 ENDIF";
-        String whileLine = "110 WHILE r AND x OR s";
-        String wendLine = "110 WEND";
-        String endLine = "110 END";
-
-        // lines.add(dimLine);
-        lines.add(printLine);
-        // lines.add(inputLine);
-        // lines.add(inputLine2);
-        // lines.add(inputLine3);
-        // lines.add(inputLine4);
-        // lines.add(validationLine);
-        // lines.add(assignationLine);
-        lines.add(ifLine3);
-        lines.add(endIfLine);
-        //lines.add(whileLine);
-        //lines.add(wendLine);
-        lines.add(endLine);
-
         try {
-            val.validateCodeLines(lines);
-            //val.validateDIMLine(1, dimLine);
-            //val.validatePrintLine(2, printLine);
-            //val.validateInputLine(3, inputLine);
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println(e.getMessage());
+            validatePrintLine(100, "150 PRINT \"Digite \";\"el valor que desea elevar:\"");
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
+
+//    public static void main(String[] args) {
+//        SyntaxValidator val = new SyntaxValidator();
+//
+//        ArrayList<String> lines = new ArrayList<>();
+//        String dimLine = "100 DIM VAR,VARW2 AS DOUBLE";
+//        String printLine = "101 PRINT "
+//                + SyntaxUtils.QUOTES + "Hello" + SyntaxUtils.QUOTES + ";"
+//                + SyntaxUtils.QUOTES + "Its_me" + SyntaxUtils.QUOTES + ";"
+//                + "VAR2";
+//        String inputLine = "102 INPUT VAR1";
+//        String inputLine2 = "103 INPUT VAR1";
+//        String inputLine3 = "104 INPUT VAR1";
+//        String inputLine4 = "105 INPUT VAR1";
+//        String validationLine = "111 VAR1 = 0+0";
+//        String assignationLine = "102 X = 1+0";
+//        String ifLine = "110 IF ((1>6)AND(5==7)) THEN";
+//        String ifLine2 = "110 IF 1>0AND2>0OR2==100*(2*((12+6)/5))/14 THEN";
+//        String ifLine3 = "110 IF 1==0AND2>=1 THEN";
+//        String endIfLine = "115 ENDIF";
+//        String whileLine = "110 WHILE r AND x OR s";
+//        String wendLine = "110 WEND";
+//        String endLine = "110 END";
+//
+//        lines.add(dimLine);
+//        //lines.add(printLine);
+//        // lines.add(inputLine);
+//        // lines.add(inputLine2);
+//        // lines.add(inputLine3);
+//        // lines.add(inputLine4);
+//        // lines.add(validationLine);
+//        // lines.add(assignationLine);
+//        lines.add(ifLine3);
+//        lines.add(endIfLine);
+//        //lines.add(whileLine);
+//        //lines.add(wendLine);
+//        // lines.add(endLine);
+//        lines.add(inputLine);
+//
+//        try {
+//            val.validateCodeLines(lines);
+//            //val.validateDIMLine(1, dimLine);
+//            //val.validatePrintLine(2, printLine);
+//            //val.validateInputLine(3, inputLine);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            System.out.println(e.getMessage());
+//        }
+//    }
 }

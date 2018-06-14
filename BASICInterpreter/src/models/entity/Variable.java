@@ -44,8 +44,8 @@ public class Variable {
                 
     }
 
-    public static void main(String[] args) {
-        Variable variable = new Variable("PI", VariableType.DOUBLE, 3.1416);
-        System.out.println((variable.getValue() instanceof Double) ? "Si" : "No");
-    }
+//    public static void main(String[] args) {
+//        Variable variable = new Variable("PI", VariableType.DOUBLE, "3.1416");
+//        System.out.println((variable.getValue() instanceof Double) ? "Si" : "No");//revisar que le entra a esto
+//    }
 }
