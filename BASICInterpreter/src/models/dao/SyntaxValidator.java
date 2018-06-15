@@ -274,10 +274,6 @@ public class SyntaxValidator {
             lineTokensAux.add(lineTokens[i]);
         }
         lineTokens = lineTokensAux.toArray(new String[lineTokensAux.size()]);
-        for (String lineToken : lineTokens) {
-            
-        System.out.println("asssssssssssssssssssssssss" + lineToken.toString());
-        }
         if (lineTokens.length < 6) {
             //split variables by commas for third token, check variablesamount - 1
             //equal to countCommas
@@ -329,6 +325,19 @@ public class SyntaxValidator {
 
     public static void validateAssignationLine(int lineIndex, String line) throws Exception {
         String[] lineTokens = line.split(" ");
+        ArrayList<String> lineTokensAux = new ArrayList<>();
+        String aux = "";
+        for (int i = 3; i < lineTokens.length; i++) {
+            aux+= lineTokens[i];
+        }
+        lineTokensAux.add(lineTokens[0]);
+        lineTokensAux.add(lineTokens[1]);
+        lineTokensAux.add(lineTokens[2]);
+        lineTokensAux.add(aux);
+        lineTokens = lineTokensAux.toArray(new String[lineTokensAux.size()]);
+        for (String lineToken : lineTokens) {
+            System.out.println("asssssssssssssssssssssssss" + lineToken.toString());
+        }
         //FALLA SI HAY ESPACIOS EN LA ASIGNACIÓN
         if (lineTokens.length < 5) {
             if (isValidVariableName(lineTokens[1])) {
@@ -337,12 +346,12 @@ public class SyntaxValidator {
 
                     if (lineTokens[2].equals(SyntaxUtils.ASSIGNATION)) {
 
-                        if (isValidArithmeticExpression(lineTokens[3])) {
+//                        if (isValidArithmeticExpression(lineTokens[3])) {
                             System.out.println("\t Line " + lineIndex + ": ASSIGNATION line is OK");
 
-                        } else {
-                            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_ARITHMETIC_EXPRESSION));
-                        }
+//                        } else {
+//                            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_ARITHMETIC_EXPRESSION));
+//                        }
 
                     } else {
                         throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_ASSIGNATION));
@@ -361,6 +370,27 @@ public class SyntaxValidator {
     public static void validateIfLine(int lineIndex, String line) throws Exception {
 
         String[] lineTokens = line.split(" ");
+        //
+         ArrayList<String> lineTokensAux = new ArrayList<>();
+        String aux = "";
+        int counter = 0;
+        lineTokensAux.add(lineTokens[0]);
+        lineTokensAux.add(lineTokens[1]);
+        for (int i = 2; i < lineTokens.length; i++) {
+            if (!lineTokens[i].equals("THEN")) {
+                aux += lineTokens[i];
+            } else {
+                counter = i;
+                lineTokensAux.add(aux);
+                break;
+            }
+        }
+        for (int i = counter; i < lineTokens.length; i++) {
+            lineTokensAux.add(lineTokens[i]);
+        }
+        lineTokens = lineTokensAux.toArray(new String[lineTokensAux.size()]);
+        
+        
 
         //ACÁ SE CAMBIA SI LA EXPRESIÓN LÓGICA TIENE ESPACIOS TIENE ESPACIOS    
         if (lineTokens.length < 5) {

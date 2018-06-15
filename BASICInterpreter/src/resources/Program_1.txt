@@ -2,11 +2,13 @@
 120 DIM Cont,Res,Cont AS DOUBLE
 130 Base = 0
 135 Pow = 0
-140 Cont = 0
+140 Cont = 1 +2*Pow
 150 PRINT "Digite el valor ";" que desea elevar:" 
 180 PRINT "Digite_el_valor_de_la_potencia:" 
-190 WHILE 1<2  
+190 WHILE 1 <    2  
 220 WEND
+223 IF 2<1 THEN
+224 ENDIF
 230 PRINT "Resultado";Base;"Elevado_a";Pow;"igual";Res
 240 PRINT "FIN"
 250 END

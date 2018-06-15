@@ -14,9 +14,7 @@
         <group>
             <file>file:/D:/Documentos/GitHub/BASICInterpreter/BASICInterpreter/src/models/toolkit/ProgramLoader.java</file>
             <file>file:/D:/Documentos/GitHub/BASICInterpreter/BASICInterpreter/src/resources/Program_1.txt</file>
-            <file>file:/D:/Documentos/GitHub/BASICInterpreter/BASICInterpreter/src/models/entity/VariableType.java</file>
             <file>file:/D:/Documentos/GitHub/BASICInterpreter/BASICInterpreter/src/models/dao/SyntaxValidator.java</file>
-            <file>file:/D:/Documentos/GitHub/BASICInterpreter/BASICInterpreter/src/models/dao/Program.java</file>
         </group>
     </open-files>
 </project-private>
