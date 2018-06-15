@@ -60,6 +60,8 @@ public class SyntaxUtils {
     public static final String MSG_WHILE_NOT_OPENED = "WEND sin WHILE";
     public static final String MSG_NOT_THEN_FOUND = "Esperaba palabra reservada THEN";
     public static final String MSG_LINE_ALREADY_EXISTS = "Número de línea duplicado";
+    public static final String MSG_CANNOT_DECLARE_VARIABLE = "No se puede declarar variables aquí";
+    public static final String MSG_EMPTY_FILE = "Archivo vacío";
 
     public static String buildOutputErrorMessage(int lineIndex, String message) {
         return "at line " + lineIndex + ": " + message;

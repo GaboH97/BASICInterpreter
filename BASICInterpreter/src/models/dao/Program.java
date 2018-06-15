@@ -22,14 +22,14 @@ public class Program {
         codeLines = new ArrayList<>();
     }
 
-    public void loadCodeLines(ArrayList<String> textLines) {
+    public void loadCodeLines(ArrayList<String> textLines) throws Exception {
         textLines.forEach((textLine) -> {
             loadLine(textLine);
         });
         buildProgram();
     }
 
-    public void buildProgram() {
+    public void buildProgram() throws Exception {
         for (Line codeLine : codeLines) {
             if (codeLine.getLineType() != null) {
                 if (codeLine.getLineType().equals(LineType.DIM)) {
@@ -40,26 +40,30 @@ public class Program {
                     //OBTIENE LA LISTA DE VARIABLES
                     String[] varList = lineTokens[2].split(",");
                     //OBTIENE TIPO DE VARIABLE
-                    String variableType = lineTokens[lineTokens.length-1];
+                    String variableType = lineTokens[lineTokens.length - 1];
 
                     VariableType varType = VariableType.valueOf(variableType);
 
-                    loadVariablesInProgram(varList, varType);
+                    loadVariablesInProgram(codeLine.getLineNumber(), varList, varType);
                 }
-            }else{ //AQUI HACE MODIFICACIONES A LAS VARIABLES
-                
+            } else { //AQUI HACE MODIFICACIONES A LAS VARIABLES
+
             }
         }
     }
 
-    public void loadVariablesInProgram(String[] varList, VariableType varType) {
+    public void loadVariablesInProgram(int lineNumber, String[] varList, VariableType varType) throws Exception {
         for (int i = 0; i < varList.length; i++) {
             String variableName = varList[i];
             if (!variables.containsKey(variableName)) {
                 Variable variable = new Variable(variableName, varType);
                 variables.put(variableName, variable);
             } else {
-                System.out.println("ya existe "+variableName);
+                throw new Exception(
+                        SyntaxUtils.buildOutputErrorMessage(
+                                lineNumber, "Variable: "
+                                + SyntaxUtils.QUOTES + variableName
+                                + SyntaxUtils.QUOTES) + " ya ha sido declarada");
             }
         }
     }

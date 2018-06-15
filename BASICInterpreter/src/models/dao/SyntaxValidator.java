@@ -19,18 +19,37 @@ public class SyntaxValidator {
     private boolean isIfOpen;
     private boolean hasEnded;
     private boolean hasDeclaredVariables;
+    private int ifsOpened;
+    private int whilesOpened;
 
     public SyntaxValidator() {
         isWhileOpen = false;
         isIfOpen = false;
         hasEnded = false;
         hasDeclaredVariables = false;
+        ifsOpened = 0;
+        whilesOpened = 0;
     }
 
     public void validateCodeLines(ArrayList<String> lines) throws Exception {
         for (int i = 0; i < lines.size(); i++) {
-            validateLine(i, lines.get(i));
+            if (!lines.get(i).isEmpty()) {
+                validateLine(i, lines.get(i));
+            }
         }
+
+        if (ifsOpened > 0) {
+            throw new Exception(buildOutputErrorMessage(lines.size(), SyntaxUtils.MSG_IF_NOT_CLOSED));
+        } else if (ifsOpened < 0) {
+            throw new Exception(buildOutputErrorMessage(lines.size(), SyntaxUtils.MSG_IF_NOT_OPENED));
+        }
+
+        if (whilesOpened > 0) {
+            throw new Exception(buildOutputErrorMessage(lines.size(), SyntaxUtils.MSG_WHILE_NOT_CLOSED));
+        } else if (whilesOpened < 0) {
+            throw new Exception(buildOutputErrorMessage(lines.size(), SyntaxUtils.MSG_WHILE_NOT_OPENED));
+        }
+
         if (isWhileOpen) {
             throw new Exception(buildOutputErrorMessage(lines.size(), SyntaxUtils.MSG_WHILE_NOT_CLOSED));
         }
@@ -42,12 +61,12 @@ public class SyntaxValidator {
         if (!hasEnded) {
             throw new Exception(buildOutputErrorMessage(lines.size(), SyntaxUtils.MSG_PROGRAM_HAS_NOT_ENDED));
         }
-        System.out.println("Succesfully validated!");
+        System.out.println("\n \t Succesfully validated!");
     }
 
     public static String deleteSpaces(String str) {    //custom method to remove multiple space
         StringBuilder sb = new StringBuilder();
-        for (String s : str.split(" ")) {
+        for (String s : str.split(" |\t")) {
             if (!s.equals("")) { // ignore space
                 sb.append(s).append(" ");       // add word with 1 space
             }
@@ -82,7 +101,7 @@ public class SyntaxValidator {
                                     System.out.println("Línea " + lineIndex + " es DIM");
                                     validateDIMLine(lineIndex, line);
                                 } else {
-                                    System.out.println("ya no se puede declarar");
+                                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_CANNOT_DECLARE_VARIABLE));
                                 }
                                 break;
                             case PRINT:
@@ -99,34 +118,29 @@ public class SyntaxValidator {
                                 System.out.println("Línea " + lineIndex + " es IF");
                                 validateIfLine(lineIndex, line);
                                 isIfOpen = true;
+                                ifsOpened++;
                                 hasDeclaredVariables = true;
                                 break;
                             case ENDIF:
-                                if (isIfOpen && !isWhileOpen) {
-                                    System.out.println("Línea " + lineIndex + " es ENDIF");
-                                    validateElseEndEndIfWendLine(lineIndex, line);
-                                    isIfOpen = false;
-                                    hasDeclaredVariables = true;
-                                } else {
-                                    throw new Exception(buildOutputErrorMessage(lineIndex, "perra vida"));
-                                }
+                                System.out.println("Línea " + lineIndex + " es ENDIF");
+                                validateElseEndEndIfWendLine(lineIndex, line);
+                                isIfOpen = false;
+                                hasDeclaredVariables = true;
+                                ifsOpened--;
                                 break;
                             case WHILE:
                                 System.out.println("Línea " + lineIndex + " es WHILE");
                                 validateWhileLine(lineIndex, line);
                                 isWhileOpen = true;
                                 hasDeclaredVariables = true;
+                                whilesOpened++;
                                 break;
                             case WEND:
-                                if (isWhileOpen) {
-                                    System.out.println("Línea " + lineIndex + " es WEND");
-                                    validateElseEndEndIfWendLine(lineIndex, line);
-                                    isWhileOpen = false;
-                                    hasDeclaredVariables = true;
-                                } else {
-                                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_WHILE_NOT_OPENED));
-
-                                }
+                                System.out.println("Línea " + lineIndex + " es WEND");
+                                validateElseEndEndIfWendLine(lineIndex, line);
+                                isWhileOpen = false;
+                                hasDeclaredVariables = true;
+                                whilesOpened--;
                                 break;
                             case GOTO:
                                 System.out.println("Línea " + lineIndex + " es GOTO");
@@ -324,11 +338,12 @@ public class SyntaxValidator {
     }
 
     public static void validateAssignationLine(int lineIndex, String line) throws Exception {
+        System.out.println("line isaaaa "+line);
         String[] lineTokens = line.split(" ");
         ArrayList<String> lineTokensAux = new ArrayList<>();
         String aux = "";
         for (int i = 3; i < lineTokens.length; i++) {
-            aux+= lineTokens[i];
+            aux += lineTokens[i];
         }
         lineTokensAux.add(lineTokens[0]);
         lineTokensAux.add(lineTokens[1]);
@@ -337,6 +352,7 @@ public class SyntaxValidator {
         lineTokens = lineTokensAux.toArray(new String[lineTokensAux.size()]);
         //FALLA SI HAY ESPACIOS EN LA ASIGNACIÓN
         if (lineTokens.length < 5) {
+
             if (isValidVariableName(lineTokens[1])) {
 
                 if (lineTokens[2] != null && lineTokens[3] != null) {
@@ -368,7 +384,7 @@ public class SyntaxValidator {
 
         String[] lineTokens = line.split(" ");
         //
-         ArrayList<String> lineTokensAux = new ArrayList<>();
+        ArrayList<String> lineTokensAux = new ArrayList<>();
         String aux = "";
         int counter = 0;
         lineTokensAux.add(lineTokens[0]);
@@ -386,8 +402,6 @@ public class SyntaxValidator {
             lineTokensAux.add(lineTokens[i]);
         }
         lineTokens = lineTokensAux.toArray(new String[lineTokensAux.size()]);
-        
-        
 
         //ACÁ SE CAMBIA SI LA EXPRESIÓN LÓGICA TIENE ESPACIOS TIENE ESPACIOS    
         if (lineTokens.length < 5) {
@@ -595,9 +609,8 @@ public class SyntaxValidator {
     }
 
     public static boolean isANumberOrValidVariableChar(char c) {
-        return (((int) c) >= 48 && ((int) c) <= 57 )||(((int) c) >= 65 && ((int) c) <= 90 )||(((int) c) >= 97 && ((int) c) <= 122 ) || c == '.';
+        return (((int) c) >= 48 && ((int) c) <= 57) || (((int) c) >= 65 && ((int) c) <= 90) || (((int) c) >= 97 && ((int) c) <= 122) || c == '.';
     }
-    
 
     /**
      *
@@ -693,59 +706,9 @@ public class SyntaxValidator {
     }
 
     public static void main(String[] args) {
-        try {
-            System.out.println(isANumberOrValidVariableChar('A'));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        String coso = "190                      WHILE  Cont < Pow ";
+        System.out.println(coso + coso.contains("\t"));
+        coso = deleteSpaces(coso);
+        System.out.println(coso + coso.contains("\t"));
     }
-
-//    public static void main(String[] args) {
-//        SyntaxValidator val = new SyntaxValidator();
-//
-//        ArrayList<String> lines = new ArrayList<>();
-//        String dimLine = "100 DIM VAR,VARW2 AS DOUBLE";
-//        String printLine = "101 PRINT "
-//                + SyntaxUtils.QUOTES + "Hello" + SyntaxUtils.QUOTES + ";"
-//                + SyntaxUtils.QUOTES + "Its_me" + SyntaxUtils.QUOTES + ";"
-//                + "VAR2";
-//        String inputLine = "102 INPUT VAR1";
-//        String inputLine2 = "103 INPUT VAR1";
-//        String inputLine3 = "104 INPUT VAR1";
-//        String inputLine4 = "105 INPUT VAR1";
-//        String validationLine = "111 VAR1 = 0+0";
-//        String assignationLine = "102 X = 1+0";
-//        String ifLine = "110 IF ((1>6)AND(5==7)) THEN";
-//        String ifLine2 = "110 IF 1>0AND2>0OR2==100*(2*((12+6)/5))/14 THEN";
-//        String ifLine3 = "110 IF 1==0AND2>=1 THEN";
-//        String endIfLine = "115 ENDIF";
-//        String whileLine = "110 WHILE r AND x OR s";
-//        String wendLine = "110 WEND";
-//        String endLine = "110 END";
-//
-//        lines.add(dimLine);
-//        //lines.add(printLine);
-//        // lines.add(inputLine);
-//        // lines.add(inputLine2);
-//        // lines.add(inputLine3);
-//        // lines.add(inputLine4);
-//        // lines.add(validationLine);
-//        // lines.add(assignationLine);
-//        lines.add(ifLine3);
-//        lines.add(endIfLine);
-//        //lines.add(whileLine);
-//        //lines.add(wendLine);
-//        // lines.add(endLine);
-//        lines.add(inputLine);
-//
-//        try {
-//            val.validateCodeLines(lines);
-//            //val.validateDIMLine(1, dimLine);
-//            //val.validatePrintLine(2, printLine);
-//            //val.validateInputLine(3, inputLine);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            System.out.println(e.getMessage());
-//        }
-//    }
 }

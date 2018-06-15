@@ -1,0 +1,21 @@
+110	DIM   Base, Pow  AS DOUBLE 
+120     DIM   Cont, RES AS DOUBLE
+130 Base = 0
+135 Pow = 0
+140 Cont = 0
+150     PRINT "Digite el valor que desea elevar :" 
+160	INPUT Base 
+170 RES = Base
+180	PRINT  "Digite el valor de la potencia :"
+190	WHILE  Cont < Pow   
+200 Cont = Cont + 1
+210 RES = Base * RES 
+220	WEND
+230 PRINT "Resultado" ; Base ; "Elevado a ";  Pow; " igual "; RES 
+240 PRINT "FIN" 
+250 END
+
+
+
+
+
