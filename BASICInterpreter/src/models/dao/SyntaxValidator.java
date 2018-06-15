@@ -595,7 +595,7 @@ public class SyntaxValidator {
     }
 
     public static boolean isANumberOrValidVariableChar(char c) {
-        return (((int) c) >= 48 && ((int) c) <= 57 )||(((int) c) >= 65 && ((int) c) <= 90 )||(((int) c) >= 97 && ((int) c) <= 122 );
+        return (((int) c) >= 48 && ((int) c) <= 57 )||(((int) c) >= 65 && ((int) c) <= 90 )||(((int) c) >= 97 && ((int) c) <= 122 ) || c == '.';
     }
     
 
