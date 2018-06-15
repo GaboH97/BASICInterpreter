@@ -335,9 +335,6 @@ public class SyntaxValidator {
         lineTokensAux.add(lineTokens[2]);
         lineTokensAux.add(aux);
         lineTokens = lineTokensAux.toArray(new String[lineTokensAux.size()]);
-        for (String lineToken : lineTokens) {
-            System.out.println("asssssssssssssssssssssssss" + lineToken.toString());
-        }
         //FALLA SI HAY ESPACIOS EN LA ASIGNACIÓN
         if (lineTokens.length < 5) {
             if (isValidVariableName(lineTokens[1])) {
