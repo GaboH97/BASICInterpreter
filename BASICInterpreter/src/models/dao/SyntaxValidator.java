@@ -343,12 +343,12 @@ public class SyntaxValidator {
 
                     if (lineTokens[2].equals(SyntaxUtils.ASSIGNATION)) {
 
-//                        if (isValidArithmeticExpression(lineTokens[3])) {
+                        if (isValidArithmeticExpression(lineTokens[3])) {
                             System.out.println("\t Line " + lineIndex + ": ASSIGNATION line is OK");
 
-//                        } else {
-//                            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_ARITHMETIC_EXPRESSION));
-//                        }
+                        } else {
+                            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_ARITHMETIC_EXPRESSION));
+                        }
 
                     } else {
                         throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_ASSIGNATION));
@@ -595,8 +595,9 @@ public class SyntaxValidator {
     }
 
     public static boolean isANumberOrValidVariableChar(char c) {
-        return ((int) c) >= 48 && ((int) c) <= 57;
+        return (((int) c) >= 48 && ((int) c) <= 57 )||(((int) c) >= 65 && ((int) c) <= 90 )||(((int) c) >= 97 && ((int) c) <= 122 );
     }
+    
 
     /**
      *
@@ -693,7 +694,7 @@ public class SyntaxValidator {
 
     public static void main(String[] args) {
         try {
-            validatePrintLine(100, "150 PRINT \"Digite \";\"el valor que desea elevar:\"");
+            System.out.println(isANumberOrValidVariableChar('A'));
         } catch (Exception ex) {
             ex.printStackTrace();
         }
