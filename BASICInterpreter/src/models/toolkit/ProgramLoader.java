@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 import models.dao.Program;
 import models.dao.SyntaxUtils;
@@ -22,7 +23,7 @@ public class ProgramLoader {
 
     public ArrayList<String> readProgramLinesFromFile(String fileName) {
         List<String> lines = new ArrayList<>();
-        File file = new File("src/resources/" + fileName);
+        File file = new File("./resources/" + fileName);
         if (file.length() != 0) {
             //read file into stream, try-with-resources
             BufferedReader br = null;
@@ -43,7 +44,11 @@ public class ProgramLoader {
         ProgramLoader programLoader = new ProgramLoader();
         SyntaxValidator validator = new SyntaxValidator();
 
-        String fileName = "Program_3.txt";
+        Scanner sc = new Scanner(System.in);
+        
+    
+        System.out.println("Ingrese el nombre del archivo ubicado en carpeta resources: \n");
+        String fileName = sc.nextLine();
         ArrayList<String> lines = programLoader.readProgramLinesFromFile(fileName);
 
         if (!lines.isEmpty()) {

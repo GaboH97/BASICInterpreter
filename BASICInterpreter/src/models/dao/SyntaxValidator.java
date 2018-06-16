@@ -705,10 +705,10 @@ public class SyntaxValidator {
         return builder.toString();
     }
 
-    public static void main(String[] args) {
-        String coso = "190                      WHILE  Cont < Pow ";
-        System.out.println(coso + coso.contains("\t"));
-        coso = deleteSpaces(coso);
-        System.out.println(coso + coso.contains("\t"));
-    }
+//    public static void main(String[] args) {
+//        String coso = "190                      WHILE  Cont < Pow ";
+//        System.out.println(coso + coso.contains("\t"));
+//        coso = deleteSpaces(coso);
+//        System.out.println(coso + coso.contains("\t"));
+//    }
 }
