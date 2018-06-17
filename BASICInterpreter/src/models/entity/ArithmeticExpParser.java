@@ -1,6 +1,7 @@
 package models.entity;
 
 import java.util.Stack;
+import models.dao.SyntaxValidator;
 
 /**
  *
@@ -11,8 +12,9 @@ public class ArithmeticExpParser {
     public static double solveArithmeticExpression(String expression) {
 
         String trimmedExpression = expression.replaceAll(" ", "");
+        System.out.println("trimmed expression " + trimmedExpression);
 
-        char[] tokens = expression.toCharArray();
+        char[] tokens = trimmedExpression.toCharArray();
 
         // Stack for numbers: 'values'
         Stack<Double> values = new Stack<Double>();
@@ -21,9 +23,8 @@ public class ArithmeticExpParser {
         Stack<Character> ops = new Stack<Character>();
 
         for (int i = 0; i < tokens.length; i++) {
-            
+
             //HASTA EL MOMENTO SOLO FUNCIONA CON NÚMEROS ENTEROS
-            
             // Current token is a number, push it to stack for numbers
             if (Character.isLetterOrDigit(tokens[i])) {
                 StringBuffer sbuf = new StringBuffer();
@@ -32,6 +33,7 @@ public class ArithmeticExpParser {
                 while (i < tokens.length && Character.isLetterOrDigit(tokens[i])) {
                     sbuf.append(tokens[i++]);
                 }
+                i--;
                 values.push(Double.parseDouble(sbuf.toString()));
             } // Current token is an opening brace, push it to 'ops'
             else if (tokens[i] == '(') {
@@ -49,6 +51,7 @@ public class ArithmeticExpParser {
                 // token, which is an operator. Apply operator on top of 'ops'
                 // to top two elements in values stack
                 while (!ops.empty() && operatorHasPrecedence(tokens[i], ops.peek())) {
+
                     values.push(doOperation(ops.pop(), values.pop(), values.pop()));
                 }
 
@@ -74,9 +77,7 @@ public class ArithmeticExpParser {
         if (op2 == '(' || op2 == ')') {
             return false;
         }
-        if ((op1 == '^') && ((op2 == '*' || op2 == '/'))
-                || (op1 == '*' || op1 == '/') && (op2 == '+' || op2 == '-')
-                || (op1 == '^') && (op2 == '+' || op2 == '-')) {
+        if ((op1 == '*' || op1 == '/') && (op2 == '+' || op2 == '-')) {
             return false;
         } else {
             return true;
@@ -88,6 +89,7 @@ public class ArithmeticExpParser {
     public static double doOperation(char operator, double b, double a) {
         switch (operator) {
             case '+':
+                System.out.println("aqui");
                 return a + b;
             case '-':
                 return a - b;
@@ -105,11 +107,11 @@ public class ArithmeticExpParser {
     }
 
     // Driver method to test above methods
-//    public static void main(String[] args) {
-//        System.out.println(ArithmeticExpParser.solveArithmeticExpression("2 ^ ( 2 * 3 )"));
-//        System.out.println(ArithmeticExpParser.solveArithmeticExpression("3 + 3 + 3"));
-//        System.out.println(ArithmeticExpParser.solveArithmeticExpression("100 * 2 + 12"));
-//        System.out.println(ArithmeticExpParser.solveArithmeticExpression("100 * ( 1 + 12 )"));
-//        System.out.println(ArithmeticExpParser.solveArithmeticExpression("100 * ( 2 * ( ( 12 + 6 ) / 5 ) ) / 14"));
-//    }
+    public static void main(String[] args) {
+        System.out.println(ArithmeticExpParser.solveArithmeticExpression("2 * ( 2 * 3 )"));
+        System.out.println(ArithmeticExpParser.solveArithmeticExpression("3 + 3"));
+        System.out.println(ArithmeticExpParser.solveArithmeticExpression("100 * 2 + 12"));
+        System.out.println(ArithmeticExpParser.solveArithmeticExpression("100 * ( 2 * ( ( 12 + 6 ) / 5 ) ) / 14"));
+    }
+    
 }

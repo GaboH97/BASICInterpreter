@@ -2,8 +2,6 @@ package models.dao;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import static models.dao.SyntaxUtils.buildOutputErrorMessage;
@@ -61,6 +59,7 @@ public class SyntaxValidator {
         if (!hasEnded) {
             throw new Exception(buildOutputErrorMessage(lines.size(), SyntaxUtils.MSG_PROGRAM_HAS_NOT_ENDED));
         }
+
         System.out.println("\n \t Succesfully validated!");
     }
 
@@ -216,6 +215,9 @@ public class SyntaxValidator {
         String tokenAux = buildNewStringFromIndex(2, lineTokens);
 
         String[] printableTokens = tokenAux.split(";");
+        for (String printableToken : printableTokens) {
+            System.out.println("Tokensito");
+        }
 
         long countQuotes = tokenAux.chars().filter(num -> num == SyntaxUtils.QUOTES).count();
         long countdotAndComma = tokenAux.chars().filter(num -> num == ';').count();
@@ -265,29 +267,13 @@ public class SyntaxValidator {
         return true;
     }
 
-    public static void validateDIMLine(int lineIndex, String line) throws Exception {
-        //Trim string to only one space between words
-        String trimmedLine = deleteSpaces(line);
-        //Split line into spaces
-        String[] lineTokens = trimmedLine.split(" ");
-        ArrayList<String> lineTokensAux = new ArrayList<>();
-        String aux = "";
-        int counter = 0;
-        lineTokensAux.add(lineTokens[0]);
-        lineTokensAux.add(lineTokens[1]);
-        for (int i = 2; i < lineTokens.length; i++) {
-            if (!lineTokens[i].equals("AS")) {
-                aux += lineTokens[i];
-            } else {
-                counter = i;
-                lineTokensAux.add(aux);
-                break;
-            }
-        }
-        for (int i = counter; i < lineTokens.length; i++) {
-            lineTokensAux.add(lineTokens[i]);
-        }
-        lineTokens = lineTokensAux.toArray(new String[lineTokensAux.size()]);
+    public void validateDIMLine(int lineIndex, String line) throws Exception {
+
+        //Trim string to only one space between words && Split line into spaces
+        String[] lineTokens = deleteSpaces(line).split(" ");
+
+        lineTokens = refactorTokensForDimLine(lineTokens);
+        //---------------------------------------------------------------------
         if (lineTokens.length < 6) {
             //split variables by commas for third token, check variablesamount - 1
             //equal to countCommas
@@ -322,6 +308,27 @@ public class SyntaxValidator {
         }
     }
 
+    public static String[] refactorTokensForDimLine(String[] lineTokens) {
+        ArrayList<String> lineTokensAux = new ArrayList<>();
+        String aux = "";
+        int counter = 0;
+        lineTokensAux.add(lineTokens[0]);
+        lineTokensAux.add(lineTokens[1]);
+        for (int i = 2; i < lineTokens.length; i++) {
+            if (!lineTokens[i].equals("AS")) {
+                aux += lineTokens[i];
+            } else {
+                counter = i;
+                lineTokensAux.add(aux);
+                break;
+            }
+        }
+        for (int i = counter; i < lineTokens.length; i++) {
+            lineTokensAux.add(lineTokens[i]);
+        }
+        return lineTokensAux.toArray(new String[lineTokensAux.size()]);
+    }
+
     public void validateElseEndEndIfWendLine(int lineIndex, String line) throws Exception {
 
         String trimmedLine = deleteSpaces(line);
@@ -338,18 +345,11 @@ public class SyntaxValidator {
     }
 
     public static void validateAssignationLine(int lineIndex, String line) throws Exception {
-        System.out.println("line isaaaa "+line);
-        String[] lineTokens = line.split(" ");
-        ArrayList<String> lineTokensAux = new ArrayList<>();
-        String aux = "";
-        for (int i = 3; i < lineTokens.length; i++) {
-            aux += lineTokens[i];
-        }
-        lineTokensAux.add(lineTokens[0]);
-        lineTokensAux.add(lineTokens[1]);
-        lineTokensAux.add(lineTokens[2]);
-        lineTokensAux.add(aux);
-        lineTokens = lineTokensAux.toArray(new String[lineTokensAux.size()]);
+
+        //Trim string to only one space between words && Split line into spaces
+        String[] lineTokens = deleteSpaces(line).split(" ");
+
+        lineTokens = refactorTokensForAssignationLine(lineTokens);
         //FALLA SI HAY ESPACIOS EN LA ASIGNACIÓN
         if (lineTokens.length < 5) {
 
@@ -359,7 +359,11 @@ public class SyntaxValidator {
 
                     if (lineTokens[2].equals(SyntaxUtils.ASSIGNATION)) {
 
-                        if (isValidArithmeticExpression(lineTokens[3])) {
+                        String newValToken = lineTokens[3];
+                        //RECIBE UN LITERAL O UNA EXPRESIÓN ALGEBRÁICA
+                        if (isValidArithmeticExpression(newValToken)
+                                || (newValToken.startsWith(String.valueOf(SyntaxUtils.QUOTES))
+                                && newValToken.startsWith(String.valueOf(SyntaxUtils.QUOTES)))) {
                             System.out.println("\t Line " + lineIndex + ": ASSIGNATION line is OK");
 
                         } else {
@@ -380,28 +384,25 @@ public class SyntaxValidator {
         }
     }
 
-    public static void validateIfLine(int lineIndex, String line) throws Exception {
-
-        String[] lineTokens = line.split(" ");
-        //
+    public static String[] refactorTokensForAssignationLine(String[] lineTokens) {
         ArrayList<String> lineTokensAux = new ArrayList<>();
         String aux = "";
-        int counter = 0;
+        for (int i = 3; i < lineTokens.length; i++) {
+            aux += lineTokens[i];
+        }
         lineTokensAux.add(lineTokens[0]);
         lineTokensAux.add(lineTokens[1]);
-        for (int i = 2; i < lineTokens.length; i++) {
-            if (!lineTokens[i].equals("THEN")) {
-                aux += lineTokens[i];
-            } else {
-                counter = i;
-                lineTokensAux.add(aux);
-                break;
-            }
-        }
-        for (int i = counter; i < lineTokens.length; i++) {
-            lineTokensAux.add(lineTokens[i]);
-        }
-        lineTokens = lineTokensAux.toArray(new String[lineTokensAux.size()]);
+        lineTokensAux.add(lineTokens[2]);
+        lineTokensAux.add(aux);
+
+        return lineTokensAux.toArray(new String[lineTokensAux.size()]);
+    }
+
+    public static void validateIfLine(int lineIndex, String line) throws Exception {
+
+        String[] lineTokens = deleteSpaces(line).split(" ");
+        //
+        lineTokens = refactorTokensForIfLine(lineTokens);
 
         //ACÁ SE CAMBIA SI LA EXPRESIÓN LÓGICA TIENE ESPACIOS TIENE ESPACIOS    
         if (lineTokens.length < 5) {
@@ -431,30 +432,27 @@ public class SyntaxValidator {
             throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_TOO_MUCH_TOKENS));
         }
 
+    }
 
-        /*
-        if (lineTokens.length < 5) {
-
-            if (lineTokens[2] != null && lineTokens[3] != null) {
-
-                if (isValidLogicExpression(lineTokens[2])) {
-
-                    if (lineTokens[3].toUpperCase().equals("THEN")) {
-
-                        System.out.println("\t Line " + lineIndex + ": IF line is OK");
-
-                    } else {
-                        throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
-                    }
-                } else {
-                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LOGIC_EXPRESSION));
-                }
+    public static String[] refactorTokensForIfLine(String[] lineTokens) {
+        ArrayList<String> lineTokensAux = new ArrayList<>();
+        String aux = "";
+        int counter = 0;
+        lineTokensAux.add(lineTokens[0]);
+        lineTokensAux.add(lineTokens[1]);
+        for (int i = 2; i < lineTokens.length; i++) {
+            if (!lineTokens[i].equals("THEN")) {
+                aux += lineTokens[i];
             } else {
-                throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
+                counter = i;
+                lineTokensAux.add(aux);
+                break;
             }
-        } else {
-            throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_TOO_MUCH_TOKENS));
-        }*/
+        }
+        for (int i = counter; i < lineTokens.length; i++) {
+            lineTokensAux.add(lineTokens[i]);
+        }
+        return lineTokensAux.toArray(new String[lineTokensAux.size()]);
     }
 
     private static void validateWhileLine(int lineIndex, String line) throws Exception {
@@ -695,6 +693,10 @@ public class SyntaxValidator {
 
     public static boolean isValidLineNumber(String lineNumber) {
         return lineNumber.length() < 4 && lineNumber.chars().allMatch(Character::isDigit);
+    }
+
+    public static boolean isNumeric(String numberAsString) {
+        return numberAsString.matches("[+-]?\\d*(\\.\\d+)?");
     }
 
     public static String buildNewStringFromIndex(int fromIndex, String[] tokens) {

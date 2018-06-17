@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 import java.util.stream.Collectors;
 import models.dao.Program;
 import models.dao.SyntaxUtils;
@@ -23,7 +22,7 @@ public class ProgramLoader {
 
     public ArrayList<String> readProgramLinesFromFile(String fileName) {
         List<String> lines = new ArrayList<>();
-        File file = new File("./resources/" + fileName);
+        File file = new File("./src/resources/" + fileName);
         if (file.length() != 0) {
             //read file into stream, try-with-resources
             BufferedReader br = null;
@@ -44,11 +43,12 @@ public class ProgramLoader {
         ProgramLoader programLoader = new ProgramLoader();
         SyntaxValidator validator = new SyntaxValidator();
 
-        Scanner sc = new Scanner(System.in);
+        //Scanner sc = new Scanner(System.in);
         
     
-        System.out.println("Ingrese el nombre del archivo ubicado en carpeta resources: \n");
-        String fileName = sc.nextLine();
+        //System.out.println("Ingrese el nombre del archivo ubicado en carpeta resources: \n");
+        //String fileName = sc.nextLine();bruno
+        String fileName = "Program_2.txt";
         ArrayList<String> lines = programLoader.readProgramLinesFromFile(fileName);
 
         if (!lines.isEmpty()) {
@@ -57,9 +57,9 @@ public class ProgramLoader {
             System.out.println("\n");
             try {
                 validator.validateCodeLines(lines);
-                //program.loadCodeLines(lines);
+                program.loadCodeLines(lines);
                 //System.out.println(program.toString());
-                //System.out.println(program.printVariables());
+                System.out.println(program.printVariables());
             } catch (Exception ex) {
                 System.out.println(ex.getMessage());
                 ex.printStackTrace();
