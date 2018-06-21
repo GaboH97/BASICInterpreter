@@ -5,8 +5,6 @@
  */
 package models.entity;
 
-import java.util.Formatter;
-
 /**
  *
  * @author user
@@ -16,11 +14,14 @@ public class Line {
     private int lineNumber;
     private String text;
     private LineType lineType;
+    //-------- PARA ANIDACIÓN ------
+    private int nestingLevel;
 
-    public Line(int lineNumber, String text, LineType lineType) {
+    public Line(int lineNumber, String text, LineType lineType, int nestingLevel) {
         this.lineNumber = lineNumber;
         this.text = text;
         this.lineType = lineType;
+        this.nestingLevel = nestingLevel;
     }
 
     public int getLineNumber() {
@@ -47,10 +48,18 @@ public class Line {
         this.lineType = lineType;
     }
 
+    public int getNestingLevel() {
+        return nestingLevel;
+    }
+
+    public void setNestingLevel(int nestingLevel) {
+        this.nestingLevel = nestingLevel;
+    }
+
     @Override
     public String toString() {
-        return String.format("%-100s -> %s \n", getText(),
-                (getLineType() != null) ? getLineType().name() : "ASIGN");
+        return String.format("%-100s -> %s %d \n", getText(),
+                (getLineType() != null) ? getLineType().name() : "ASIGN", getNestingLevel());
     }
 
 }

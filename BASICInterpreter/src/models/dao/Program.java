@@ -19,39 +19,73 @@ public class Program {
 
     private HashMap<String, Variable> variables;
     private ArrayList<Line> codeLines;
+    private int nestingLevel;
 
     public Program() {
         variables = new HashMap<>();
         codeLines = new ArrayList<>();
+        nestingLevel = 0;
     }
 
     public void loadCodeLines(ArrayList<String> textLines) throws Exception {
         for (String textLine : textLines) {
             loadLine(textLine);
         }
-        loadProgramVariables();
+        executeProgram();
     }
 
-    public void loadProgramVariables() throws Exception {
-        for (Line codeLine : codeLines) {
+    public void executeProgram() throws Exception {
+        boolean programHasEnded = false;
+        int executingLineIndex = 0;
+        while (!programHasEnded) {
             //OBTIENE CONTENIDO DE LA LÍNEA
+            System.out.println("Current line index is: " + executingLineIndex);
+            Line codeLine = codeLines.get(executingLineIndex);
+
             String lineContent = codeLine.getText();
             if (codeLine.getLineType() != null) {
                 switch (codeLine.getLineType()) {
                     case DIM:
                         processDimLine(codeLine);
+                        executingLineIndex++;
                         break;
                     case PRINT:
                         processPrintLine(codeLine);
+                        executingLineIndex++;
                         break;
                     case INPUT:
                         processInputLine(codeLine);
+                        executingLineIndex++;
                         break;
-                    default:
+                    case WHILE:
+                        executingLineIndex = processWhileLine(codeLine, executingLineIndex);
+                        break;
+                    case WEND:
+                        //TODO
+                        executingLineIndex++;
+                        break;
+                    case IF:
+                        //TODO
+                        executingLineIndex++;
+                        break;
+                    case ELSE:
+                        //TODO
+                        executingLineIndex++;
+                        break;
+                    case ENDIF:
+                        executingLineIndex++;
+                        break;
+                    case GOTO:
+                        //OBTIENE LA LÍNEA A LA QUE TIENE QUE IR
+                        executingLineIndex = processGotoLine(codeLine, executingLineIndex);
+                        break;
+                    case END:
+                        programHasEnded = true;
                         break;
                 }
             } else { //------ ASIGNACIONES
                 processAssignationLine(codeLine);
+                executingLineIndex++;
             }
         }
     }
@@ -76,7 +110,7 @@ public class Program {
         }
     }
 
-    public void processDimLine(Line codeLine) throws Exception {
+    private void processDimLine(Line codeLine) throws Exception {
         String lineContent = codeLine.getText();
         //OBTIENE LOS TOKENS DE LA LÍNEA
         String[] lineTokens = SyntaxValidator.deleteSpaces(lineContent).split(" ");
@@ -91,7 +125,7 @@ public class Program {
         loadVariablesInProgram(codeLine.getLineNumber(), varList, varType);
     }
 
-    public void processAssignationLine(Line codeLine) throws Exception {
+    private void processAssignationLine(Line codeLine) throws Exception {
         String lineContent = codeLine.getText();
         //OBTIENE LOS TOKENS DE LA LÍNEA
         String[] lineTokens = SyntaxValidator.deleteSpaces(lineContent).split(" ");
@@ -143,7 +177,7 @@ public class Program {
         }
     }
 
-    public void processPrintLine(Line codeLine) throws Exception {
+    private void processPrintLine(Line codeLine) throws Exception {
         String lineContent = codeLine.getText();
         //OBTIENE LOS TOKENS DE LA LÍNEA
         String[] lineTokens = SyntaxValidator.deleteSpaces(lineContent).split(" ");
@@ -174,14 +208,13 @@ public class Program {
         System.out.println("Printing: " + builder.toString());
     }
 
-    public void processInputLine(Line codeLine) throws Exception {
+    private void processInputLine(Line codeLine) throws Exception {
         //ABRE SCANNER PARA LA ENTRADA DE DATOS
         String varName = SyntaxValidator.deleteSpaces(codeLine.getText()).split(" ")[2];
         Variable var = variables.get(varName);
         if (var != null) {
 
             Scanner sc = new Scanner(System.in);
-            System.out.println("perrito");
             String newValue = sc.nextLine();
 
             //ESPERA UN VALOR TIPO DOUBLE
@@ -221,10 +254,50 @@ public class Program {
 
     }
 
+    private int processIfLine(Line codeLine, int executingLineIndex) {
+        //ENCUENTRA EL ELSE ANTES DE PROCESAR
+
+        //TODO HERE
+        return executingLineIndex;
+    }
+
+    private int processWhileLine(Line codeLine, int executingLineIndex) {
+        //ENCUENTRA EL WEND ANTES DE PROCESAR
+
+        //TODO HERE
+        return executingLineIndex;
+    }
+
+    private int getLineIndex(int executingLineIndex) {
+        //OBTIENE LA LÍNEA QUE TIENE EL MISMO NESTING LEVEL, PARA SABER
+        // A QUÉ LÍNEA SALTAR EN CASO DE QUE NO SE CUMPLA UNA CONDICIÓN
+        // EN UNA INSTRUCCIÓN DE CONTROL (IF/WHILE)
+        for (int i = 0; i < codeLines.size(); i++) {
+            if (codeLines.get(i).getNestingLevel() == nestingLevel);
+            return i;
+        }
+        return executingLineIndex;
+    }
+
+    private int processGotoLine(Line codeLine, int executingLineIndex) {
+        int lineNumber = Integer.parseInt(SyntaxValidator.deleteSpaces(codeLine.getText()).split(" ")[2]);
+        return getIndexInArrayOfLineNumber(lineNumber);
+    }
+
+    private int getIndexInArrayOfLineNumber(int lineNumber) {
+        for (int i = 0; i < codeLines.size(); i++) {
+            if (codeLines.get(i).getLineNumber() == lineNumber) {
+                return i;
+            }
+
+        }
+        // NO EXISTE DICHA LÍNEA
+        return -1;
+    }
+
     public void loadLine(String textLine) throws Exception {
         String lineTokens[] = SyntaxValidator.deleteSpaces(textLine).split(" ");
-        
-        System.out.println("IMPIRMO "+lineTokens[0]);
+
         int lineNumber = Integer.parseInt(lineTokens[0]);
         String lineTypeToken = lineTokens[1];
 
@@ -235,18 +308,45 @@ public class Program {
                 .anyMatch(val -> val.name().equals(lineTypeToken.toUpperCase()));
 
         Line line = createLine(lineNumber, textLine,
-                (existsInLineType) ? LineType.valueOf(lineTypeToken.toUpperCase())
-                        : null);
+                ((existsInLineType) ? LineType.valueOf(lineTypeToken.toUpperCase())
+                        : null), 0);
+        if (line.getLineType() != null) {
 
-        if (addLine(line)) {
-            System.out.println("Line successfully added!");
-        } else {
+            switch (line.getLineType()) {
+                //CADA VEZ QUE ABRE UN IF O UN WHILE, INCREMENTA EL NIVEL DE ANIDACIÓN EMPEZANDO
+                //QUE COMIENZA DESDE 0
+                case IF:
+                case WHILE:
+                    line.setNestingLevel(nestingLevel);
+                    nestingLevel++;
+                    break;
+
+                //CADA VEZ QUE CIERRA UN IF O UN WHILE, INCREMENTA EL NIVEL DE ANIDACIÓN EMPEZANDO
+                //QUE COMIENZA DESDE 0
+                case ENDIF:
+                case WEND:
+                    nestingLevel--;
+                    line.setNestingLevel(nestingLevel);
+
+                    break;
+                //CADA VEZ QUE HAY UN ELSE, LO DEJA CON EL MISMO NIVEL DE ANIDACIÓN
+                //DEL ÚLTIMO IF ABIERTO
+                case ELSE:
+                    line.setNestingLevel(nestingLevel);
+                    break;
+                default:
+                    break;
+
+            }
+        }
+
+        if (!addLine(line)) {
             throw new Exception(SyntaxUtils.buildOutputErrorMessage(line.getLineNumber(), "Compilation error: " + SyntaxUtils.MSG_LINE_ALREADY_EXISTS));
         }
     }
 
-    public static Line createLine(int lineNumber, String text, LineType lineType) {
-        return new Line(lineNumber, text, lineType);
+    public static Line createLine(int lineNumber, String text, LineType lineType, int nestingLevel) {
+        return new Line(lineNumber, text, lineType, nestingLevel);
     }
 
     public boolean addLine(Line line) {
@@ -282,7 +382,7 @@ public class Program {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder("Program \n");
+        StringBuilder builder = new StringBuilder("\n Program \n");
         codeLines.forEach((codeLine) -> {
             builder.append(codeLine.toString());
         });

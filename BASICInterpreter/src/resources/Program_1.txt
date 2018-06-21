@@ -1,14 +1,17 @@
 110 DIM Base, Pow AS DOUBLE
-120 DIM Cont,Res,Cont AS DOUBLE
-130 Base = 0
-135 Pow = 0
+120 DIM Cont,Res AS DOUBLE
+130 Base = 2
+135 Pow = 5
 140 Cont = Base +2*Pow
 150 PRINT "Digite el valor ";" que desea elevar:" 
 180 PRINT "Digite_el_valor_de_la_potencia:" 
-190 WHILE 1 <    2  
-200 IF 2<1 THEN
-205 PRINT "Valor de la base:";Base
-210 ENDIF
+190 WHILE 1 < 2  
+200     IF 2<1 THEN
+205         PRINT "Valor de la base:";Base
+206         IF 2<1 THEN
+207             PRINT "Valor de la base:";Base
+208         ENDIF
+210     ENDIF
 220 WEND
 230 PRINT "Resultado";Base;"Elevado_a";Pow;"igual";Res
 240 PRINT "FIN"

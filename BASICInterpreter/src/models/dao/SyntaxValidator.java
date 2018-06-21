@@ -215,9 +215,6 @@ public class SyntaxValidator {
         String tokenAux = buildNewStringFromIndex(2, lineTokens);
 
         String[] printableTokens = tokenAux.split(";");
-        for (String printableToken : printableTokens) {
-            System.out.println("Tokensito");
-        }
 
         long countQuotes = tokenAux.chars().filter(num -> num == SyntaxUtils.QUOTES).count();
         long countdotAndComma = tokenAux.chars().filter(num -> num == ';').count();

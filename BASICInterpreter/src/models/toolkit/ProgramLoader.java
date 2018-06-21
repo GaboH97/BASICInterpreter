@@ -47,7 +47,7 @@ public class ProgramLoader {
         
     
         //System.out.println("Ingrese el nombre del archivo ubicado en carpeta resources: \n");
-        //String fileName = sc.nextLine();bruno
+        //String fileName = sc.nextLine();
         String fileName = "Program_2.txt";
         ArrayList<String> lines = programLoader.readProgramLinesFromFile(fileName);
 
@@ -58,7 +58,7 @@ public class ProgramLoader {
             try {
                 validator.validateCodeLines(lines);
                 program.loadCodeLines(lines);
-                //System.out.println(program.toString());
+                System.out.println(program.toString());
                 System.out.println(program.printVariables());
             } catch (Exception ex) {
                 System.out.println(ex.getMessage());
