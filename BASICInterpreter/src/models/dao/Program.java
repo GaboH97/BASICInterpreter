@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Stack;
+import static models.dao.SyntaxValidator.findOperatorInSublogicExpression;
 import models.entity.Line;
 import models.entity.LineType;
 import models.entity.Variable;
@@ -31,6 +32,7 @@ public class Program {
         for (String textLine : textLines) {
             loadLine(textLine);
         }
+        System.out.println(toString());
         executeProgram();
     }
 
@@ -39,9 +41,7 @@ public class Program {
         int executingLineIndex = 0;
         while (!programHasEnded) {
             //OBTIENE CONTENIDO DE LA LÍNEA
-            System.out.println("Current line index is: " + executingLineIndex);
             Line codeLine = codeLines.get(executingLineIndex);
-
             String lineContent = codeLine.getText();
             if (codeLine.getLineType() != null) {
                 switch (codeLine.getLineType()) {
@@ -62,11 +62,11 @@ public class Program {
                         break;
                     case WEND:
                         //TODO
-                        executingLineIndex++;
+                        executingLineIndex = processWendLine(codeLine, executingLineIndex);
                         break;
                     case IF:
                         //TODO
-                        executingLineIndex++;
+                        executingLineIndex = processIfLine(codeLine, executingLineIndex);
                         break;
                     case ELSE:
                         //TODO
@@ -191,7 +191,7 @@ public class Program {
             //IMPRIME UN LITERAL
             if (printableToken.startsWith(String.valueOf(SyntaxUtils.QUOTES))
                     && printableToken.endsWith(String.valueOf(SyntaxUtils.QUOTES))) {
-                builder.append(printableToken);
+                builder.append(printableToken.substring(1,printableToken.length()-1)).append(" ");
             } else {
                 //IMPRIME UNA VARIABLE
                 if (variables.containsKey(printableToken)) {
@@ -205,7 +205,7 @@ public class Program {
                 }
             }
         }
-        System.out.println("Printing: " + builder.toString());
+        System.out.println(builder.toString());
     }
 
     private void processInputLine(Line codeLine) throws Exception {
@@ -254,29 +254,130 @@ public class Program {
 
     }
 
-    private int processIfLine(Line codeLine, int executingLineIndex) {
-        //ENCUENTRA EL ELSE ANTES DE PROCESAR
+    private int processIfLine(Line codeLine, int executingLineIndex) throws Exception {
 
-        //TODO HERE
-        return executingLineIndex;
+        if (solveLogicExpression(codeLine)) {
+            return executingLineIndex + 1;
+        } else {
+            int elseIndex = getLineIndex(executingLineIndex, codeLine.getNestingLevel(), LineType.ELSE);
+            if (elseIndex == -1) {//NO HAY UN ELSE EN ESTE IF
+                return executingLineIndex = getLineIndex(executingLineIndex, codeLine.getNestingLevel(), LineType.ENDIF);
+            } else {//HAY UN ELSE EN ESTE IF
+                return elseIndex;
+            }
+        }
     }
 
-    private int processWhileLine(Line codeLine, int executingLineIndex) {
+    public boolean solveLogicExpression(Line codeLine) throws Exception {
+        String text[] = SyntaxValidator.deleteSpaces(codeLine.getText()).split(" ");
+
+        String lineTokens[] = null;
+        if (codeLine.getLineType().equals(LineType.IF)) {
+            lineTokens = SyntaxValidator.refactorTokensForIfLine(text);
+        }else{
+            lineTokens = SyntaxValidator.refactorTokensForWhileLine(text);
+        }
+
+        String logicExpr = lineTokens[2];
+
+        String[] subLogicExpressions = logicExpr.split("AND|OR");
+
+        boolean booleans[] = new boolean[subLogicExpressions.length];
+
+        return solveSublogicExpression(subLogicExpressions[0], true);
+
+    }
+
+    public boolean solveAllLogicExpressions(String[] subLogicExpressions) {
+        return false;
+    }
+
+    public boolean solveSublogicExpression(String sublogicExpression, boolean hasToRemove) throws Exception {
+        //LA SUBEXPRESIÓN LÓGICA TIENE LA SIGUIENTE ESTRUCTURA
+        //EXPRESIÓN ARITMÉTICA - OPERADOR LÓGICO DE COMPARACIÓN - EXPRESIÓN ARITMÉTICA
+
+        //ENCUENTRA QUÉ OPERADOR LÓGICO DE COMPARACIÓN UTILIZA LA EXPRESIÓN
+        String operator = findOperatorInSublogicExpression(sublogicExpression);
+
+        int indexOfOperator = sublogicExpression.indexOf(operator);
+        int lengthOfOperator = operator.length();
+
+        //CREA NUEVO STRING CON LA PRIMERA EXPRESIÓN ARITMÉTICA DESDE INDEX 0
+        //HASTA EL INDEX DEL OPERADOR LÓGICO DE COMPARACIÓN
+        String firstAritExpr = sublogicExpression.substring(0, indexOfOperator);
+
+        //CREA NUEVO STRING CON LA SEGUNDA EXPRESIÓN ARITMÉTICA DESDE INDEX DONDE
+        //EMPIEZA EL OPERADOR + LA LONGITUD DEL OPERADOR HASTA EL FINAL DE LA
+        //SUBEXPRESIÓN LÓGICA
+        String secondAritExpr = sublogicExpression.substring(indexOfOperator + lengthOfOperator, sublogicExpression.length());
+
+        //if (hasToRemove) {
+//        System.out.println(" FIRST " + firstAritExpr);
+//        System.out.println(" SECOND " + secondAritExpr);
+        firstAritExpr = firstAritExpr.substring(1, firstAritExpr.length());
+        secondAritExpr = secondAritExpr.substring(0, secondAritExpr.length() - 1);
+        // }
+
+//        System.out.println(" FIRST CHUNK " + firstAritExpr);
+//        System.out.println(" SECOND CHUNK " + secondAritExpr);
+//        System.out.println(" OPERATOR CHUNK \n " + operator);
+        double valueLeft = solveArithmeticExpression(0, firstAritExpr);
+        double valueRight = solveArithmeticExpression(0, secondAritExpr);
+
+        return solveSublogicExpression(valueLeft, valueRight, operator);
+    }
+
+    public static boolean solveSublogicExpression(double valueLeft, double valueRight, String operator) {
+        switch (operator) {
+            case "<":
+                return valueLeft < valueRight;
+            case ">":
+                return valueLeft > valueRight;
+            case "<=":
+                return valueLeft <= valueRight;
+            case ">=":
+                return valueLeft >= valueRight;
+            case "==":
+                return valueLeft == valueRight;
+        }
+        return false;
+    }
+
+    private int processWhileLine(Line codeLine, int executingLineIndex) throws Exception {
         //ENCUENTRA EL WEND ANTES DE PROCESAR
-
-        //TODO HERE
-        return executingLineIndex;
+        if (solveLogicExpression(codeLine)) {
+            return executingLineIndex + 1;
+        } else {
+            return executingLineIndex = getLineIndex(executingLineIndex, codeLine.getNestingLevel(), LineType.WEND) + 1;
+        }
     }
 
-    private int getLineIndex(int executingLineIndex) {
+    private int processWendLine(Line codeLine, int executingLineIndex) {
+        return executingLineIndex = getLineIndex(executingLineIndex, codeLine.getNestingLevel(), LineType.WHILE);
+    }
+
+    private int getLineIndex(int executingLineIndex, int nestingLevel, LineType lineType) {
         //OBTIENE LA LÍNEA QUE TIENE EL MISMO NESTING LEVEL, PARA SABER
         // A QUÉ LÍNEA SALTAR EN CASO DE QUE NO SE CUMPLA UNA CONDICIÓN
         // EN UNA INSTRUCCIÓN DE CONTROL (IF/WHILE)
-        for (int i = 0; i < codeLines.size(); i++) {
-            if (codeLines.get(i).getNestingLevel() == nestingLevel);
-            return i;
+        if (lineType.equals(LineType.WHILE)) {
+            for (int i = executingLineIndex; i > 0; i--) {
+                Line line = codeLines.get(i);
+                if (line.getNestingLevel() == nestingLevel && line.getLineType().equals(lineType)) {
+                    return i;
+                }
+            }
+        } else {
+            for (int i = executingLineIndex; i < codeLines.size(); i++) {
+                Line line = codeLines.get(i);
+                if (line.getNestingLevel() == nestingLevel && line.getLineType().equals(lineType)) {
+                    return i;
+                }
+            }
         }
-        return executingLineIndex;
+
+        //NO ENCUENTRA
+        return -1;
     }
 
     private int processGotoLine(Line codeLine, int executingLineIndex) {
@@ -289,7 +390,6 @@ public class Program {
             if (codeLines.get(i).getLineNumber() == lineNumber) {
                 return i;
             }
-
         }
         // NO EXISTE DICHA LÍNEA
         return -1;
@@ -317,17 +417,17 @@ public class Program {
                 //QUE COMIENZA DESDE 0
                 case IF:
                 case WHILE:
-                    line.setNestingLevel(nestingLevel);
                     nestingLevel++;
+                    line.setNestingLevel(nestingLevel);
+
                     break;
 
                 //CADA VEZ QUE CIERRA UN IF O UN WHILE, INCREMENTA EL NIVEL DE ANIDACIÓN EMPEZANDO
                 //QUE COMIENZA DESDE 0
                 case ENDIF:
                 case WEND:
-                    nestingLevel--;
                     line.setNestingLevel(nestingLevel);
-
+                    nestingLevel--;
                     break;
                 //CADA VEZ QUE HAY UN ELSE, LO DEJA CON EL MISMO NIVEL DE ANIDACIÓN
                 //DEL ÚLTIMO IF ABIERTO
@@ -336,7 +436,6 @@ public class Program {
                     break;
                 default:
                     break;
-
             }
         }
 
@@ -389,27 +488,25 @@ public class Program {
         return builder.toString();
     }
 
-    //--------------------- TO REMOVE FROM THIS CLASS ----------------------
+    //--------------------- TO REMOVE FROM THIS CLASS ----------------------}
     public double solveArithmeticExpression(int lineNumber, String expression) throws Exception {
 
         String trimmedExpression = expression.replaceAll(" ", "");
 
         char[] tokens = trimmedExpression.toCharArray();
 
-        // Stack for numbers: 'values'
         Stack<Double> values = new Stack<Double>();
-
-        // Stack for Operators: 'ops'
-        Stack<Character> ops = new Stack<Character>();
+        
+        Stack<Character> operators = new Stack<Character>();
 
         for (int i = 0; i < tokens.length; i++) {
 
             //HASTA EL MOMENTO SOLO FUNCIONA CON NÚMEROS ENTEROS
-            // Current token is a number, push it to stack for numbers
+            // OBTIENE CARACTER NUMÉRICO
             if (Character.isLetterOrDigit(tokens[i])) {
                 StringBuffer sbuf = new StringBuffer();
 
-                // There may be more than one digits in number
+                //OBTIENE LOS SIGUIENTES CARACTERES QUE NO SEAN OPERADORES
                 while (i < tokens.length && Character.isLetterOrDigit(tokens[i])) {
                     sbuf.append(tokens[i++]);
                 }
@@ -442,43 +539,43 @@ public class Program {
 
                 }
 
-                //values.push(Double.parseDouble(sbuf.toString()));
-            } // Current token is an opening brace, push it to 'ops'
+            } // CUANDO ABRE PARÉNTESIS SE MANDA A LA PILA DE OPERADORES
             else if (tokens[i] == '(') {
-                ops.push(tokens[i]);
-            } // Closing brace encountered, solve entire brace
+                operators.push(tokens[i]);
+            } //CUANDO CIERRA PARÉNTESIS, SOLUCIONA LAS OPERACIONES
             else if (tokens[i] == ')') {
-                while (ops.peek() != '(') {
-                    values.push(doOperation(ops.pop(), values.pop(), values.pop()));
+                while (operators.peek() != '(') {
+                    values.push(doOperation(operators.pop(), values.pop(), values.pop()));
                 }
-                ops.pop();
-            } // Current token is an operator.
+                operators.pop();
+            } // SI EL CARACTER ES UN OPERADOR
             else if (tokens[i] == '+' || tokens[i] == '-'
                     || tokens[i] == '*' || tokens[i] == '/' || tokens[i] == '^') {
-                // While top of 'ops' has same or greater precedence to current
-                // token, which is an operator. Apply operator on top of 'ops'
-                // to top two elements in values stack
-                while (!ops.empty() && operatorHasPrecedence(tokens[i], ops.peek())) {
-                    values.push(doOperation(ops.pop(), values.pop(), values.pop()));
+//                MIENTRAS QUE LA PARTE SUPERIOR DE 'OPERADORES' TIENE PRECEDENCIA IGUAL 
+//                O MAYOR QUE EL TOKEN ACTUAL, QUE ES UN OPERADOR. APLICAR 
+//                OPERADOR EN LA PARTE SUPERIOR DE 'OPERADORES' A LOS DOS ELEMENTOS
+//                                        SUPERIORES EN LA PILA DE VALORES
+                while (!operators.empty() && operatorHasPrecedence(tokens[i], operators.peek())) {
+                    values.push(doOperation(operators.pop(), values.pop(), values.pop()));
                 }
                 // Push current token to 'ops'.
-                ops.push(tokens[i]);
+                operators.push(tokens[i]);
             }
         }
 
         // Entire expression has been parsed at this point, apply remaining
         // ops to remaining values
-        while (!ops.empty()) {
-            values.push(doOperation(ops.pop(), values.pop(), values.pop()));
+        while (!operators.empty()) {
+            values.push(doOperation(operators.pop(), values.pop(), values.pop()));
         }
 
-        // Top of 'values' contains result, return it
+        // AL FINAL, LA PILA DE VALORES CONTIENE EL RESULTADO, EL CUAL SE RETORNA
         return values.pop();
     }
 
-    // Returns true if 'op2' has higher or same precedence as 'op1',
-    // otherwise returns false.
-    // Precedence goes like this () -> ^ -> */ -> +-
+    // Retorna true si 'op2'tiene mayor precedencia que 'op1',
+    // De lo contrario, retorna false
+    // Precedencia va de esta manera: () -> ^ -> */ -> +-
     public static boolean operatorHasPrecedence(char op1, char op2) {
         if (op2 == '(' || op2 == ')') {
             return false;
@@ -492,8 +589,13 @@ public class Program {
         }
     }
 
-    // A utility method to apply an operator 'op' on operands 'a' 
-    // and 'b'. Return the result.
+    /**
+     * 
+     * @param operator
+     * @param b
+     * @param a
+     * @return La operación realizada
+     */
     public static double doOperation(char operator, double b, double a) {
         switch (operator) {
             case '+':
@@ -511,5 +613,16 @@ public class Program {
                 return a / b;
         }
         return 0;
+    }
+
+    public static void main(String[] args) {
+//        Program program = new Program();
+//        Line line = new Line(200, "200     IF ((2+1)<(1+1)) THEN", LineType.IF, 0);
+//        String sublogicExpression = "(2+1)<(1+1)";
+//        try {
+//            System.out.println(sublogicExpression + " es valida ?: " + ((program.solveLogicExpression(line)) ? "SI" : "NO"));
+//        } catch (Exception ex) {
+//            Logger.getLogger(Program.class.getName()).log(Level.SEVERE, null, ex);
+//        }
     }
 }

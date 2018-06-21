@@ -48,7 +48,7 @@ public class ProgramLoader {
     
         //System.out.println("Ingrese el nombre del archivo ubicado en carpeta resources: \n");
         //String fileName = sc.nextLine();
-        String fileName = "Program_2.txt";
+        String fileName = "Program_4.txt";
         ArrayList<String> lines = programLoader.readProgramLinesFromFile(fileName);
 
         if (!lines.isEmpty()) {
