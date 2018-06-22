@@ -82,6 +82,7 @@ public class SyntaxValidator {
         if (!hasEnded) {
             //Check is a valid lineNumber
             if (isValidLineNumber(lineTokens[0])) {
+                int lineNumber = Integer.parseInt(lineTokens[0]);
                 if (lineTokens[1] != null) {
                     String identifierToken = lineTokens[1].toUpperCase();
 
@@ -98,52 +99,52 @@ public class SyntaxValidator {
                             case DIM:
                                 if (!hasDeclaredVariables) {
                                     //System.out.println("Línea " + lineIndex + " es DIM");
-                                    validateDIMLine(lineIndex, line);
+                                    validateDIMLine(lineNumber, line);
                                 } else {
                                     throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_CANNOT_DECLARE_VARIABLE));
                                 }
                                 break;
                             case PRINT:
                                 //System.out.println("Línea " + lineIndex + " es PRINT");
-                                validatePrintLine(lineIndex, line);
+                                validatePrintLine(lineNumber, line);
                                 hasDeclaredVariables = true;
                                 break;
                             case INPUT:
                                 // System.out.println("Línea " + lineIndex + " es INPUT");
-                                validateInputLine(lineIndex, line);
+                                validateInputLine(lineNumber, line);
                                 hasDeclaredVariables = true;
                                 break;
                             case IF:
 //                                System.out.println("Línea " + lineIndex + " es IF");
-                                validateIfLine(lineIndex, line);
+                                validateIfLine(lineNumber, line);
                                 isIfOpen = true;
                                 ifsOpened++;
                                 hasDeclaredVariables = true;
                                 break;
                             case ENDIF:
 //                                System.out.println("Línea " + lineIndex + " es ENDIF");
-                                validateElseEndEndIfWendLine(lineIndex, line);
+                                validateElseEndEndIfWendLine(lineNumber, line);
                                 isIfOpen = false;
                                 hasDeclaredVariables = true;
                                 ifsOpened--;
                                 break;
                             case WHILE:
 //                                System.out.println("Línea " + lineIndex + " es WHILE");
-                                validateWhileLine(lineIndex, line);
+                                validateWhileLine(lineNumber, line);
                                 isWhileOpen = true;
                                 hasDeclaredVariables = true;
                                 whilesOpened++;
                                 break;
                             case WEND:
 //                                System.out.println("Línea " + lineIndex + " es WEND");
-                                validateElseEndEndIfWendLine(lineIndex, line);
+                                validateElseEndEndIfWendLine(lineNumber, line);
                                 isWhileOpen = false;
                                 hasDeclaredVariables = true;
                                 whilesOpened--;
                                 break;
                             case GOTO:
 //                                System.out.println("Línea " + lineIndex + " es GOTO");
-                                validateGotoLine(lineIndex, line);
+                                validateGotoLine(lineNumber, line);
                                 hasDeclaredVariables = true;
                                 break;
                             case END:
@@ -155,23 +156,23 @@ public class SyntaxValidator {
                             case ELSE:
                                 if (isIfOpen) {
 //                                    System.out.println("Línea " + lineIndex + " es ELSE");
-                                    validateElseEndEndIfWendLine(lineIndex, line);
+                                    validateElseEndEndIfWendLine(lineNumber, line);
                                     hasDeclaredVariables = true;
 
                                 } else {
-                                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_IF_NOT_OPENED));
+                                    throw new Exception(buildOutputErrorMessage(lineNumber, SyntaxUtils.MSG_IF_NOT_OPENED));
                                 }
                                 break;
                         }
                     } else {
                         //ESTE CASO ES PARA ASIGNACIÓN DE VARIABLE
 //                        System.out.println("Línea " + lineIndex + " es de asignación ");
-                        validateAssignationLine(lineIndex, line);
+                        validateAssignationLine(lineNumber, line);
                         hasDeclaredVariables = true;
                     }
 
                 } else {
-                    throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
+                    throw new Exception(buildOutputErrorMessage(lineNumber, SyntaxUtils.MSG_INCOMPLETE_STATEMENT));
                 }
             } else {
                 throw new Exception(buildOutputErrorMessage(lineIndex, SyntaxUtils.MSG_INVALID_LINE_NUMBER));

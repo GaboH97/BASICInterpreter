@@ -528,11 +528,11 @@ public class Program {
     }
 
     public String printVariables() {
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder("Variables");
         for (Map.Entry<String, Variable> entry : variables.entrySet()) {
             String varName = entry.getKey();
             Variable var = entry.getValue();
-            builder.append(varName).append(" -> ").append(var.toString()).append("\n");
+            builder.append("\t").append(varName).append(" -> ").append(var.toString()).append("\n");
         }
         return builder.toString();
     }
@@ -621,8 +621,8 @@ public class Program {
             }
         }
 
-        // Entire expression has been parsed at this point, apply remaining
-        // ops to remaining values
+        //EMPIEZA A SOLUCIONAR LAS EXPRESIONES ALGEBRÁICAS HASTA QUE NO HAYA
+        //MÁS OPERADORES EN LA PILA CORRESPONDIENTE
         while (!operators.empty()) {
             values.push(doOperation(operators.pop(), values.pop(), values.pop()));
         }

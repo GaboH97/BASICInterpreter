@@ -51,10 +51,10 @@ public class ProgramLoader {
 
         if (!lines.isEmpty()) {
             System.out.println("TEXT LINES \n");
-            for (String line : lines) {
-                if (line.isEmpty()) {
-                    System.out.println("line "+line);
-                    lines.remove(line);
+            for (int i = 0; i < lines.size(); i++) {
+                if(lines.get(i).isEmpty()){
+                    System.out.println("remov");
+                    lines.remove(i);
                 }
             }
             lines.stream().forEach(line -> System.out.println("\t" + line));
@@ -62,7 +62,6 @@ public class ProgramLoader {
             try {
                 validator.validateCodeLines(lines);
                 program.loadCodeLines(lines);
-                System.out.println(program.toString());
                 System.out.println(program.printVariables());
             } catch (Exception ex) {
                 System.out.println(ex.getMessage());
