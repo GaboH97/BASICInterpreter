@@ -1,0 +1,65 @@
+﻿/*****************************************************************************************************/
+*                                                                                                     *
+*        VALIDADOR DE SINTAXIS VARIANTE LENGUAJE BASIC                                                       *
+*                                                                                                     *
+*        Autores: Cesar Nicolás Cardozo Rincón                                                             *
+*                 Gabriel Ricardo Amaya Huertas                                                             *
+*                                                                                                     *
+*                                                                                                     *
+/****************************************************************************************************/
+
+
+
+
+******************************************* IMPORTANTE ******************************************
+
+
+La aplicación adjunta a este documento llamada BASICInterpreter - , al día de hoy, posee las siguientes funcionalidades:
+
+
+        -Lectura de archivo .txt
+        -Validación sintácta de las líneas de código ingresadas
+        -Identificación de errores de sintaxis con la línea donde se generó el error
+        -Ejecución del código compilado
+
+
+
+
+-El archivo ejecutable del programa se encuentra en la ruta BASICInterpreter/dist/__________________ y se llama BASICInterpreter.jar
+-Los archivos de prueba se cargan desde la carpeta BASICInterpreter/resources/ y deben tener extensión txt
+
+
+******************************************* REQUISITOS TÉCNICOS ************************************************
+
+
+* JDK 1.8.x
+        
+******************************************* IMPORTANTE ************************************************
+
+
+El historial de versiones que se tiene se ha manejado principalmente mediante el contenedor de repositorios GitHub en el siguiente link:
+
+
+https://github.com/GaboH97/BASICInterpreter.git
+
+
+Allí se muestran los avances y cambios que se han hecho al proyecto en la sección de commits.
+
+
+Esta carpeta contiene los siguientes archivos
+        
+        -Subcarpeta con el proyecto del VALIDADOR DE SINTAXIS VARIANTE LENGUAJE BASIC  llamada “BASICInterpreter”
+        -El presente archivo Léeme.
+        -Subcarpeta “resources” donde están archivos con ejemplos de código fuente variante de BASIC
+        -La carpeta "src" con el código fuente del programa 
+
+
+**************************************************** INSTRUCCIONES DE USO ****************************************************
+
+
+1. Abrir un CMD y ubicarse en la carpeta donde se encuentra el archivo BASICInterpreter.jar.
+2. Luego ejecutar el archivo BASICInterpreter.jar mediante el comando "java -jar BASICInterpreter.jar".
+3. El programa solicitará que ingrese el nombre del archivo de prueba, el cual debe ser ingresado con extensión .txt (Ej: Program_6.txt)
+   NOTA: El programa buscará en la carpeta de "resources"
+4. El programa mostrará trazas de las validaciones de cada una de las líneas indicando el tipo de línea encontrada y si está correctamente escrita, de lo contrario, generará una excepción controlada en la que mostrará un mensaje con el error que se produjo y la ejecución del programa se interrumpirá.
+5. Si la validación fue correcta, se ejecutará cada una de las sentencias del programa. En esta fase se podrían presentar errores semánticos (asignación errónea, incompatibilidad de variables, referencia a variables y líneas inexistentes).

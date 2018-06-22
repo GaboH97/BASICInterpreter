@@ -5,7 +5,7 @@
 140 Cont = Base +2*Pow
 150 PRINT "Digite el valor ";" que desea elevar:" 
 180 PRINT "Digite_el_valor_de_la_potencia:"  
-200     IF Base<Cont THEN
+200     IF (Base<Cont) THEN
 205         PRINT "Valor de la base:";Base
 206         IF (2<1) THEN
 207             PRINT "Valor de la base:";Base

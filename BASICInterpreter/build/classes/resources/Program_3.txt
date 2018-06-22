@@ -1,9 +1,18 @@
 110	DIM   Base, Pow  AS DOUBLE
-111	DIM   coso  AS STRING  
-120     DIM   Cont, RES AS DOUBLE
-130     INPUT coso
-135     PRINT "Meta la base plz"
-140     INPUT Base
-210     RES = Base * RES * 2
-230     PRINT "Resultado" ; Base ;       "Elevado a ";  Pow; " igual "; RES 
-250     END
+120	DIM   Cont, RES AS DOUBLE
+130	Base = 0
+135	Pow = 0
+140	Cont = 0
+150	PRINT  "Digite el valor que desea elevar :" 
+160	INPUT Base 
+170	RES = Base
+180	PRINT "Digite el valor de la potencia :"
+185	INPUT Pow 
+190	WHILE ( Cont < Pow-1 )  
+211             PRINT "CONT VALE "; Cont
+200		Cont = Cont + 1
+210		RES = Base * RES
+220	WEND
+230	PRINT "Resultado" ; Base ; "Elevado a ";  Pow; " igual "; RES 
+240	PRINT "FIN" 
+250	END
