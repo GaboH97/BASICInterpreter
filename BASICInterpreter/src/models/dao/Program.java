@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static models.dao.SyntaxValidator.findOperatorInSublogicExpression;
 import models.entity.Line;
 import models.entity.LineType;
@@ -638,9 +640,9 @@ public class Program {
         if (op2 == '(' || op2 == ')') {
             return false;
         }
-        if ((op1 == '^') && ((op2 == '*' || op2 == '/'))
-                || (op1 == '*' || op1 == '/') && (op2 == '+' || op2 == '-')
-                || (op1 == '^') && (op2 == '+' || op2 == '-')) {
+        if (((op1 == '^') && ((op2 == '*' || op2 == '/')))
+                || ((op1 == '*' || op1 == '/') && (op2 == '+' || op2 == '-'))
+                || ((op1 == '^') && (op2 == '+' || op2 == '-'))) {
             return false;
         } else {
             return true;
@@ -675,13 +677,11 @@ public class Program {
 
 //    public static void main(String[] args) {
 //        Program program = new Program();
-//        Line line = new Line(200, "150 IF ((5/5)==0) THEN", LineType.IF, 0);
-//        // String sublogicExpression = "(2+1)<(1+1)";
 //        try {
-//            System.out.println(" es valida ?: " + ((program.solveLogicExpression(line)) ? "SI" : "NO"));
+//            System.out.println("Solucion es "+program.solveArithmeticExpression(0, "2 * 5 / 2 + 3"));
+//            // String sublogicExpression = "(2+1)<(1+1)";
 //        } catch (Exception ex) {
-//            ex.printStackTrace();
-//            //Logger.getLogger(Program.class.getName()).log(Level.SEVERE, null, ex);
+//            Logger.getLogger(Program.class.getName()).log(Level.SEVERE, null, ex);
 //        }
 //    }
 }

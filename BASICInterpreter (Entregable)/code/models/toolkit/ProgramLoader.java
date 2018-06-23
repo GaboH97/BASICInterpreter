@@ -23,7 +23,7 @@ public class ProgramLoader {
 
     public ArrayList<String> readProgramLinesFromFile(String fileName) {
         List<String> lines = new ArrayList<>();
-        File file = new File("./src/resources/" + fileName);
+        File file = new File("./resources/" + fileName);
         if (file.length() != 0) {
             BufferedReader br = null;
             try {
